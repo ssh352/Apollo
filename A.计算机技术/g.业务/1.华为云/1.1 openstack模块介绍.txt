@@ -1,0 +1,35 @@
+关于云业务的一些认识：
+Software[SaaS]
+Applications
+Data[PaaS]
+Runtime
+Middleware
+O/S[IaaS]
+Virtualization
+Servers
+Storage
+Networking
+
+1.OpenStack各模块介绍
+Cinder: OpenStack Block Storage Cinder
+  -- Block Storage 块存储，相当于一块硬盘，你可以在上面建立新的文件系统，形象点：例如阿里云的SSD云盘，你可以添加多块，随意改变文件系统，格式化，
+  但它并不是真正的一块硬盘，它是在“云”里的一块虚拟磁盘
+  -- Object Storage 对象存储，系统是搭建好的，开放了一些API，可以对存放里面的文件进行处理，主要用于文件、附件存储阿里云的OSS、百度的BCS等等都
+  是对象存储
+  
+Heat: OpenStack Orchestration
+
+2.1 软件定义网络（SDN）
+  虚拟交换机ovs（Open vSwitch）
+  虚拟路由器（L3-agent）
+
+2.2 常用命令	
+  查看指定网络  neutron net-list --router:external True
+  对指定网络创建浮动ip  neutron floatingip-create  # 指定网络32为UUID（8-4-4-4-12）
+  
+2.3 Neutron业务
+  OpenStack Neutron业务模型：基本网络模型  http://3ms.huawei.com/hi/blog/16082_1702491.html
+  漫谈Neutron架构  http://www.openstack.cn/?p=4519
+  深入理解 Neutron -- OpenStack 网络实现  https://yeasy.gitbooks.io/openstack_understand_neutron/content/vxlan_mode/
+  neutron基本介绍  https://www.ustack.com/blog/neutron_intro/
+

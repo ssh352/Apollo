@@ -1,0 +1,19 @@
+一、公有云环境
+  1.登陆执行机 10.175.48.89 （root/cnp200@HW）
+  2.通过执行机登陆到FSO环境 172.28.0.2 （root/Huawei@CLOUD8!）
+  3.配置环境变量
+    a. source set_env
+    b. => 1
+    c. => FusionSphere123
+  4.级联层管理被级联层，如何区分两者？
+    # cps template-instance-list --service ceilometer ceilometer-agent-neutron
+    1）级联层包含了ceilometer-agent-neutron，被级联层没有
+    2）级联层包含了ceilometer-proxy，没有ceilometer-api；被级联层刚好相反
+  5.访问管理界面
+    1）查看外网访问地址  ip ad show external_api
+    2）配置openvpn，打开vpn
+    3）访问管理页面  https://ip:8890  admin/cnp200@HW
+    
+二、概念
+租户、用户、角色
+  -- 租户(1)<-->(n)用户(1)<-->(1)角色

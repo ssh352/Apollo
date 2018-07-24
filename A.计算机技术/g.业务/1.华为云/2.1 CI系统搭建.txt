@@ -1,0 +1,4 @@
+Gerrit环境搭建  
+  1.亲测版  http://zengestudy.blog.51cto.com/1702365/1771575
+  2.参考  http://zengestudy.blog.51cto.com/all/1702365/page/5
+Jenkins集成环境  http://blog.csdn.net/liujianminghero/article/details/50445643

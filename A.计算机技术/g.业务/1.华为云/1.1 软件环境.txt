@@ -1,0 +1,127 @@
+1.yum
+		* 配置文件 /etc/yum.conf
+		* [main]
+		* gpgkey  可放在本地/远程 导入的话是rpm --import GPG-KEY.txt
+		* ====
+		* 源文件repo /etc/yum.repos.d
+		* [base]
+		* name、baseurl、gpgcheck、gpgkey一般跟baseurl放在同一层顶级目录
+		* 华为研发镜像库 http://rnd-mirrors.huawei.com/
+    
+2.pip
+	* 
+		* mkdir ~/.pip
+		* vim ~/.pip/pip.conf
+		* [global]
+		* trusted-host=rnd-mirrors-langfang.huawei.com
+		* index-url=http://rnd-mirrors-langfang.huawei.com/pypi/simple
+		* ===
+		* vim ~/.pydistutils.cfg
+		* [easy_install]
+		* index-url=http://rnd-mirrors-langfang.huawei.com/pypi/simple
+
+3.resolv.conf  UNIX域名解析器
+		* /etc/resolv.conf nameserver 10.72.255.100  域名解析服务器，解析互联网上的域名
+		* /etc/hosts  本地域名解析，本地访问的域名解析成相应的ip地址
+
+4.文件/etc/yum.repos.d/CentOs-Base.repo写入：
+++++++++++++++++++++++++++++++++++
+[base]
+name=CentOS-$releasever - Base
+baseurl=http://rnd-mirrors.huawei.com/centos/$releasever/os/$basearch/
+gpgcheck=1
+gpgkey=http://rnd-mirrors.huawei.com/centos/RPM-GPG-KEY-CentOS-7
+
+[updates]
+name=CentOS-$releasever - Updates
+baseurl=http://rnd-mirrors.huawei.com/centos/$releasever/updates/$basearch/
+gpgcheck=1
+gpgkey=http://rnd-mirrors.huawei.com/centos/RPM-GPG-KEY-CentOS-7
+
+[extras]
+name=CentOS-$releasever - Extras
+baseurl=http://rnd-mirrors.huawei.com/centos/$releasever/extras/$basearch/
+gpgcheck=1
+gpgkey=http://rnd-mirrors.huawei.com/centos/RPM-GPG-KEY-CentOS-7
+
+[centosplus]
+name=CentOS-$releasever - Plus
+baseurl=http://rnd-mirrors.huawei.com/centos/$releasever/centosplus/$basearch/
+gpgcheck=1
+enabled=0
+gpgkey=http://rnd-mirrors.huawei.com/centos/RPM-GPG-KEY-CentOS-7
+++++++++++++++++++++++++++++++++++
+
+文件
+/etc/yum.repos.d/epel.repo写入：
+++++++++++++++++++++++++++++++++++
+[name]
+name=Extra Packages for Enterprise Linux 7 - $basearch
+baseurl=http://rnd-mirrors.huawei.com/epel/7/$basearch
+failovermethod=priority
+enabled=1
+gpgcheck=1
+gpgkey=http://rnd-mirrors.huawei.com/epel/RPM-GPG-KEY-EPEL-7
+
+[epel-debuginfo]
+name=Extra Packages for Enterprise Linux 7 - $basearch - Debug
+baseurl=http://rnd-mirrors.huawei.com/epel/7/$basearch/debug
+failovermethod=priority
+enabled=0
+gpgkey=http://rnd-mirrors.huawei.com/epel/RPM-GPG-KEY-EPEL-7
+gpgcheck=1
+
+[epel-source]
+name=Extra Packages for Enterprise Linux 7 - $basearch - Source
+baseurl=http://rnd-mirrors.huawei.com/epel/7/SRPMS
+failovermethod=priority
+enabled=0
+gpgkey=http://rnd-mirrors.huawei.com/epel/RPM-GPG-KEY-EPEL-7
+++++++++++++++++++++++++++++++++++=1
+
+mkdir ~/.pip
+vi ~/.pip/pip.conf
+
+[global]
+trusted-host=rnd-mirrors-langfang.huawei.com
+index-url=http://rnd-mirrors-langfang.huawei.com/pypi/simple
+
+vim ~/.pydistutils.cfg
+[easy_install]
+index-url=http://rnd-mirrors-langfang.huawei.com/pypi/simple
+
+vi /etc/resolv.conf
+nameserver 10.72.255.100
+
+yum install gcc-c++ -y
+yum install gcc python-devel -y
+yum install python-pip -y
+yum install git -y
+pip install ssh
+pip install robotframework-sshlibrary
+pip install BeautifulSoup
+
+sudo yum install -y ant asciidoc cyrus-sasl-devel docbook-style-xsl docbook5-schemas docbook5-style-xsl
+sudo yum install -y firefox graphviz libcurl-devel liberasurecode-devel libevent-devel libffi-devel
+sudo yum install -y libjpeg-turbo-devel libpcap-devel libselinux-python libuuid-devel libvirt-devel
+sudo yum install -y libvirt-python libxml2-devel libxslt-devel mariadb mariadb-devel mariadb-server
+sudo yum install -y memcached mongodb-server openldap-devel php-cli postgresql postgresql-devel
+sudo yum install -y postgresql-server python-zmq redis rrdtool-devel sqlite-devel xorg-x11-server-Xvfb
+sudo yum install -y zlib-devel
+sudo pip install timeout-decorator
+sudo pip install python-novaclient python-neutronclient python-keystoneclient
+sudo pip install tempest
+sudo mkdir -p /home/huawei/tempest/log
+sudo mkdir -p /home/huawei/tempest/lock
+
+http://cls1991.github.io/2015/11/29/pip%E4%BF%AE%E6%94%B9%E5%AE%98%E6%96%B9%E6%BA%90%E4%B8%BA%E8%B1%86%E7%93%A3%E6%BA%90/
+
+http://cls1991.github.io/2015/11/29/pip%E4%BF%AE%E6%94%B9%E5%AE%98%E6%96%B9%E6%BA%90%E4%B8%BA%E8%B1%86%E7%93%A3%E6%BA%90/
+
+pip uninstall urllib3 
+pip install urllib3
+
+pip install tempest
+
+python ./x-men/tempest/run_tempest_for_vt.py 128.27.42.2 Huawei@CLOUD8! fn_tempest_plugin.tests fn
+

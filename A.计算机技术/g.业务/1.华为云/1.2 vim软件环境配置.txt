@@ -1,0 +1,15 @@
+1.配置代理
+export http_proxy=http://x00321237:xia%401988@172.30.65.47:8080
+export https_proxy=http://x00321237:xia%401988@172.30.65.47:8080
+export no_proxy="localhost,100...,127...,192...,.huawei.com"
+注：@ %40表示
+
+2.git clone遇到认证问题“git clone 报'Peer's Certificate issuer is not recognized'”
+export GIT_SSL_NO_VERIFY=true
+注：http://3ms.huawei.com/hi/blog/78263_2118981.html
+
+3.按照vundle官网操作
+注：
+1 https://github.com/VundleVim/Vundle.vim
+2 http://www.jianshu.com/p/8d416ac4ad11
+

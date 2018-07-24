@@ -1,0 +1,9 @@
+[概念]
+交换机：L2 VLAN MAC
+路由器：L3 网关 IP
+overlay网络：也称为虚拟化网络，它对物理网络进行隧道叠加，逻辑划分为虚拟网络分片，满足基于租户的个性化需求。与之对应的传统网络，一般称之为underlay网络。
+
+[引用]
+1.网络业务  https://wizardforcel.gitbooks.io/network-basic/content/1.html
+2.RHEL7  OpenStack网络指南  https://access.redhat.com/documentation/zh-CN/Red_Hat_Enterprise_Linux_OpenStack_Platform/7/html/Networking_Guide/pr01.html
+3.深入理解Neutron  https://www.gitbook.com/book/yeasy/openstack_understand_neutron/details

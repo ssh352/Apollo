@@ -1,0 +1,56 @@
+Rally性能测试：
+  任务、原理、文档
+1 架构  
+执行流程：（keystone、rally配置）-->Rally(task)-->命令(rally/rally-manage)-->DB
+任务文件：args、runner、context、sla
+
+2 常用命令
+命令类：db、deployment、plugin、show、task、verify
+
+任务执行：rally task start xxx.json
+最后一次任务的结果报告：rally task report --out=output.html
+创建数据库 ：rally-manage db create
+初始化环境：rally deployment create --fromenv --name=exitsing
+
+3 门禁配置
+jenkins/jobs/projects.yaml->zuul/layout.yaml->task.json、task.yaml
+
+
+[引用]
+网址  http://office.huawei.com/my/personal/h00321926/Documents/Forms/All.aspx?RootFolder=%2Fmy%2Fpersonal%2Fh00321926%2FDocuments%2F6%2E1%20%E9%A1%B9%E7%9B%AE%2FCICD%2ETSE
+
+rally安装部署
+
+	* 下载rally包 git clone
+	* sudo ./install_rally.sh
+	* rally-manage db recreate
+
+
+	* pip install -r requirements.txt
+	* python setup.py install
+
+rally常用命令
+
+	* 执行命令 rally task start task.yaml
+	* 列出所有环境部署 rally deployment list
+	* rally --version
+
+rally集成openstack
+
+	* 创建deployment  rally deployment create --fromenv --name=existing
+	* 验证  rally deployment check
+
+Jinjia2
+
+	* http://docs.jinkan.org/docs/jinja2/templates.html
+
+导入环境变量
+
+	* export OS_SERVICE_TOKEN=;export OS_SERVICE_ENDPOINT=;export OS_PASSWORD=FusionSphere123;export OS_USERNAME=cloud_admin;export OS_TENANT_NAME=admin;export OS_AUTH_URL=https://identity.az1.dc1.domainname.com/identity/v2.0;export OS_ENDPOINT_TYPE=internalURL;export CINDER_ENDPOINT_TYPE=internalURL;export OS_VOLUME_API_VERSION=2;export OS_REGION_NAME=az1.dc1;export OS_CACERT=;export CPS_USERNAME=cps_admin;export CPS_PASSWORD=FusionSphere123;export PATH=/usr/hook_bin:$PATH
+	* cps host-template-instance-operate --service nova nova-api --action stop
+	* cps host-template-instance-operate --service nova nova-api --action start
+
+
+	* fs_check_status
+	* nova list
+

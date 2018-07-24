@@ -1,0 +1,238 @@
+一、OpenStack业务  
+  1.官网 http://docs.openstack.org/admin-guide/
+    全景图 https://www.ustack.com/blog/openstack_hacker/
+  2.社区 http://www.codeceo.com/article/openstack-guide-01.html
+  3.学习进阶 https://github.com/zhurongze/notes/blob/master/openstack/openstack-hacker.md
+  4.Keystone  the keystone identity manager(picture)
+  5.FusionSphere Openstack
+    - cps/FusionSphere123
+    - web login: admin/cnp200@HW
+    
+一、常用网站
+  1.开源社区bug跟踪系统  https://launchpad.net/
+  2.Ubuntu系统  https://login.ubuntu.com/  scuxia@gmail.com/***
+  3.社区开发任务进度  https://trello.com/  google账号
+  4.IRC会议记录  http://eavesdrop.openstack.org/irclogs/
+
+  6.常用命令
+	- glance image-show <image-id>
+	- 查询keystone服务是否正常 keystone endpoint-list
+	- 创建镜像 glance image-create --name cirros --disk-format qcow2 --container-format bare --file cirros-0.3.img
+	- 查询镜像 glance image-list
+	- 查询网络 neutron net-list
+	- 启动虚拟机 nova boot --image cirros --flavor1 --nic net-id=<net-id> VMname
+	- 计算节点列表 nova list
+
+  7.日志目录 /var/log/fusionsphere/component
+  8.版本：
+    - FusionSphere Platform V100R005C00B071
+    - FusionManager V100R005C00B032
+
+使用root用户登录主机后，还需要导入环境变量，才可以进行一些角色服务的操作：
+1.导入admin用户环境变量（B061）：
+export OS_PASSWORD=default
+export OS_USERNAME=cloud_admin
+export OS_TENANT_NAME=admin
+export OS_AUTH_URL=https://az1.dc1.vodafone.com:8023/identity/v2.0  
+export OS_CACERT=/etc/cacert.crt
+export OS_REGION_NAME="az1.dc1"
+export BASE_BOND=brcps
+export OS_VOLUME_API_VERSION=2
+export OS_IDENTITY_API_VERSION=2.0
+export NOVA_ENDPOINT_TYPE=internalURL 
+export CINDER_ENDPOINT_TYPE=internalURL
+export OS_ENDPOINT_TYPE=internalURL
+
+B071执行cli命令环境变量变更如下：
+
+export OS_PASSWORD=cnp200@HW
+export OS_USERNAME=nova
+export OS_TENANT_NAME=service
+export OS_AUTH_URL=https://identity.az1.dc1.vodafone.com:8023/identity/v2.0 
+export NOVA_ENDPOINT_TYPE=internalURL
+export OS_ENDPOINT_TYPE=internalURL
+export CINDER_ENDPOINT_TYPE=internalURL
+export OS_VOLUME_API_VERSION=2 
+export OS_REGION_NAME=az1.dc1
+
+2.导入keystone导入环境变量
+给keystone CLI使用
+export OS_PASSWORD=2012
+export OS_AUTH_URL=https://az1.dc1.vodafone.com:8023/identity/v2.0  
+export OS_USERNAME=nova
+export OS_TENANT_NAME=service 
+利用keystone token-get获取一个token
+export OS_SERVICE_TOKEN=上一步申请到的token
+export OS_SERVICE_ENDPOINT=https://az1.dc1.vodafone.com:8023/identity-admin/v2.0
+
+
+6.0 环境变量：
+export OS_AUTH_URL=https://identity.az1.dc1.domainname.com:443/identity/v2.0;export NOVA_ENDPOINT_TYPE=internalURL;export OS_ENDPOINT_TYPE=internalURL;export CINDER_ENDPOINT_TYPE=internalURL;export OS_VOLUME_API_VERSION=2;export OS_IMAGE_API_VERSION=1;export OS_REGION_NAME=az1.dc1;export BASE_BOND=brcps;export OS_PASSWORD=FusionSphere123;export OS_USERNAME=cloud_admin;export OS_TENANT_NAME=admin;export TMOUT=0;export CPS_USERNAME=cps_admin;export CPS_PASSWORD=FusionSphere123;export PATH=/usr/hook_bin:$PATH
+
+一：CPS相关：
+
+1.查询endpoint
+keystone endpoint-list
+
+2.删除endpoint 
+ keystone endpoint-delete ID（如上命令查出的0314b53e554c4708bf8c7b296550382d）
+
+3.查询keystone
+cps template-instance-list --service keystone keystone
+
+4.查询haproxy
+cps template-params-show --service haproxy haproxy
+
+5.列出当前主机：
+cps host-list
+
+6.删除规格
+nova flavor-list
+
+
+
+二：glance相关：
+1. 查看当前镜像
+glance image-list
+
+2.删除镜像
+glance image-delete ID（如上命令查出的ef13104e-94ee-45b9-8ecf-418e5374c99b ）
+
+3.创建镜像：
+glance image-create --name theFirstImage --disk-format qcow2 --container-format bare --is-public True --file cirros-0.3.1-x86_64-disk.img
+
+
+三：虚拟机操作相关：
+
+0.虚拟机镜像上传
+curl -i -H "Content-Type: application/octet-stream" -H "X-Auth-$TOKEN_ID" -T /opt/HUAWEI/image/cirros-0.3.1-x86_64-disk.img -k https://$DOMAIN_GLANCE/v2/images/$IMAGE_ID/file
+
+1.在指定的host上创建虚拟机（非FM虚拟机）：
+例1：
+nova boot --image theFirstImage --flavor 1 --nic net-id=d9f5c593-d0a9-42e0-974f-137bc9c71d30  testVM11 --availability_zone nova:A0808A70-CCB4-E311-80F9-000000821800
+例2：创建双网卡虚拟机：
+nova --debug boot --image big-image --flavor 7 --nic net-id=d26794b8-473c-4254-8cb8-2b79203bc6d3 --nic net-id=5cb5d724-0979-462b-8540-2a16d8c03fa8 SMSC01 --availability_zone nova:A0CDFEC3-D0B4-E311-80F9-000000821800
+
+
+2.显示虚拟机：
+nova list
+
+3.显示当前虚拟机详情：
+nova show ID（如61826e3f-8fe9-4f6e-aee7-1955edab8fbb）
+
+4.查看虚拟机规格：
+nova flavor-list
+
+5.显示当前节点虚拟机：
+virsh list
+
+6.进入虚拟机：
+virsh console ID（上命令查询出来的ID，如2）
+
+7.删除虚拟机：
+nova delete 61826e3f-8fe9-4f6e-aee7-1955edab8fbb
+
+8.退出虚拟机登陆：
+ctrl+] 
+
+9. 创建FM虚拟机规格：
+nova flavor-create FSFLAVOR 6 6144 80 4 --ephemeral 80
+
+10.创建FM的虚拟机
+创建双机的FM：（IP注意与不能DHCP端口组占用的IP重复，建议从开始网段的第3个IP后分配）
+cps --debug mnt-vm-boot --type fusionmanager --parameter subtype=allinone hamode="active-standby" host="A0808A70-CCB4-E311-80F9-000000821800,804A2A04-A9B4-E311-80F9-000000821800" user=nova password=2012 tenant-name=service auth-url="https://az1.dc1.vodafone.com:8023/identity-admin" api-subnet="6ceabb5e-364f-4f17-92e2-b6a6b398fb2f" api-fixips="90.1.0.5,90.1.0.6" api-netmask=255.255.255.0 api-haarbitrateip=90.1.0.1 api-gateway=90.1.0.1 api-floatip=90.1.0.7 region-name=az1.dc1 om-subnet="df7c27b4-e553-436c-a86f-3a0d96f706c9" om-netmask="255.255.240.0" om-fixips="169.254.2.7，169.254.2.8" om-gateway=169.254.0.1 om-floatip=169.254.2.9 flavorid="6"
+
+
+创建单机的FM：（IP注意与不能DHCP端口组占用的IP重复，建议从开始网段的第3个IP后分配）
+cps --debug mnt-vm-boot --type fusionmanager --parameter subtype=allinone hamode="single" host="A0808A70-CCB4-E311-80F9-000000821800" user=nova password=2012 tenant-name=service auth-url="https://az1.dc1.vodafone.com:8023/identity-admin" api-subnet="6ceabb5e-364f-4f17-92e2-b6a6b398fb2f" api-fixips="90.1.0.10" api-netmask=255.255.255.0 api-haarbitrateip=90.1.0.1 api-gateway=90.1.0.1 region-name=az1.dc1 om-subnet="df7c27b4-e553-436c-a86f-3a0d96f706c9" om-netmask="255.255.240.0" om-fixips="169.254.2.20" om-gateway=169.254.0.1  flavorid="6"
+
+11.删除FM虚拟机，关联的数据没有删除，需要手工删除
+
+删除镜像
+glance image-list
+
+删除安全组
+neutron security-group-list
+删除网络
+neutron net-list
+删除关联的端口
+
+12.创建虚拟机失败，查看这两个日志定位：
+/var/log/fusionsphere/component/cps-server # vi cps-server.log
+/var/log/fm/
+
+四：neutron 相关
+
+1.查询网络
+neutron net-list
+
+2.查看具体某个网络
+neutron net-show netID
+
+3.查询网桥的状态：
+ovs-ofctl show br-int
+
+4.查询安全组
+neutron security-group-list
+
+5.给安全组添加规则：
+neutron security-group-rule-create --protocol tcp --remote-ip-prefix 0.0.0.0/0 --direction ingress 7110d000-3ccc-43a5-baac-bec11114ea58 
+neutron security-group-rule-create --protocol udp --remote-ip-prefix 0.0.0.0/0 --direction ingress 7110d000-3ccc-43a5-baac-bec11114ea58 
+neutron security-group-rule-create --protocol icmp --remote-ip-prefix 0.0.0.0/0 --direction ingress 7110d000-3ccc-43a5-baac-bec11114ea58 
+创建安全组规则，否则会导致创建出来的虚拟机可以ping通外面，但是外面ping不通里面
+
+
+五：数据库相关：
+1.登陆neutron/nova的数据库，按q退出
+A0808A70-CCB4-E311-80F9-000000821800:/var/log/fusionsphere/component/nova-compute # su gaussdba
+gaussdba@A0808A70-CCB4-E311-80F9-000000821800:/var/log/fusionsphere/component/nova-compute> gsql neutron
+could not change directory to "/var/log/fusionsphere/component/nova-compute"
+gsql (9.2.1)
+Type "help" for help.
+
+NEUTRON=# \d
+NEUTRON=# select * from SECURITYGROUPS;
+NEUTRON=# \d
+NEUTRON=# select * from SECURITYGROUPPORTBINDINGS;
+
+2.登陆FM数据库
+allinonefm:/etc/sysconfig/network # su - dbadmin
+dbadmin@allinonefm:~> gsql
+gsql (9.2.1)
+Type "help" for help.
+
+ALLFMDB=# select * from connector.connector;
+ALLFMDB=# select * from ssp.cloud_infra;
+
+六：其它
+1.停止主节点上DHCP办法(非正常途径)：
+ps -ef |grep cbs
+将cbs模块都停了，然后修改cbs模块，注释掉dhcp模块
+vi /usr/local/bin/cbs-server/cbs_start.sh
+将这一行注释掉：
+InstallApp=$CURRENT_CBS_PATH/bin/dhcp/dhcpd
+
+A0808A70-CCB4-E311-80F9-000000821800:~ # ps -ef |grep cbs
+root      44553      1  1 13:38 ?        00:00:01 python /usr/local/bin/cbs-server/bin/monitor/CBSServerMonitor.py
+root      45148      1  0 13:38 ?        00:00:00 /usr/local/bin/cbs-server/bin/dhcp/dhcpd -cf /usr/local/bin/cbs-server/bin/dhcp/dhcpd.conf brcps
+root      45215      1  0 13:38 ?        00:00:00 /usr/local/bin/cbs-server/bin/tftp/in.tftpd -ls /usr/local/bin/cbs-server/bin -a 169.254.0.140:69
+root      45225      1  0 13:38 ?        00:00:00 /usr/local/bin/cbs-server/bin/python-2.7.3/bin/python2.7 cgi_server.py
+root     120815  44553  0 13:40 ?        00:00:00 sh -c { sh /usr/local/bin/cbs-server/cbs_status.sh; } 2>&1
+root     120819 120815  0 13:40 ?        00:00:00 sh /usr/local/bin/cbs-server/cbs_status.sh
+root     120882 104942  0 13:40 pts/5    00:00:00 grep cbs
+A0808A70-CCB4-E311-80F9-000000821800:~ # 
+
+
+2.当前镜像支持的格式：
+wanghuan 00225961(w00225961) 2014-05-23 10:26:01
+镜像当前支持raw,qcow2,iso三种格式
+
+3.网卡绑定的命令：
+wangwubin 00221487(w00221487) 2014-05-29 11:03:50
+echo +trunk0 >/sys/class/net/bonding_masters
+echo -trunk0 >/sys/class/net/bonding_masters
+ifenslave trunk0 eth0
+ifenslave -d trunk0 eth0
+
+4.宿主机上查看FC光纤口的启动器命令：
+cat /sys/class/fc_host/host10/port_name

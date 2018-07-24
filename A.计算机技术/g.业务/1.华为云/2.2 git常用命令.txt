@@ -1,0 +1,41 @@
+一、gerrit代码review
+1. 安装git review.
+  pip install git-review
+2. 配置git.
+  git config --global user.name  "********"
+  git config --global user.email  "********"
+3. 配置公钥.
+  生成公钥：ssh-keygen -t rsa -C "email" 
+  拷贝 /root/.ssh/id_rsa.pub，添加到gerrit->settting->SSH Public Keys->Add Key
+4. 下载代码.
+  git clone 
+  git remote add gerrit http://xxx.git  # 新增远程源
+5. 提交代码.
+  git add -A
+  git status
+  git commit -a
+  git review
+  git commit -amend  # 如果有反复修改，基于上次的patch更改，提交代码
+ 
+二、代码回退
+1. 回退到最新一次提交  git reset --hard HEAD^
+  neutron
+  git branch -r  # 查看本地所有分支
+  git status  # 查看当前所在分支
+  切换分支  git checkout hw/mitaka
+  dev-test/neutron分支git review到外部repo，修改gitreview文件，vim .gitreview
+  
+2.比较
+git reset --mixed HEAD  #将改动从缓存区中移除，但是这些改动还留在工作目录中
+git reset --hard HEAD  #舍弃没有提交的改动
+git reset --hard HEAD^  #舍弃没有提交的改动
+git reset HEAD~2  #当前分支向后回退两个提交
++++++++++++++++++++++++
+常见问题：
+1.(master|MERGING) >> error: You have not concluded your merge (MERGE_HEAD exists).
+git merge --abort
+
+2.Your branch and 'origin/master' have diverged,
+git fetch origin
+git reset --hard origin/master
+[website]http://stackoverflow.com/questions/32630379/git-your-branch-and-origin-master-have-diverged-how-to-throw-away-local-com

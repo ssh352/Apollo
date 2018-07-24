@@ -1,0 +1,14 @@
+NUWA Project
+  1 Mesos、Zookeeper、Hadoop、Spark、BI(Zepplin)、ETL（Java导向）
+  2 硬件、网络、驱动
+  
+UVP Project
+  1 KVM、XEN、libvirt、Qemu、ovs(EVS)、vmtools
+
+FusionSphere Openstack Project
+  1 CID
+    1.1 git、gerrit、jenkins
+  2 openstack
+    2.1 keystone、neutron、nova、horizon
+  3 其他框架
+    3.1 rally、avocado、unittest
