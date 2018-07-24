@@ -1,0 +1,22 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1531790114562.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "830283036",
+    "id" : "BE1D4D8D",
+    "lastKnownWriteTime" : 1532411367,
+    "last_content_update" : 1532411367628,
+    "path" : "F:/RProject/Inventory_Analysis_XXL0717.R",
+    "project_path" : "Inventory_Analysis_XXL0717.R",
+    "properties" : {
+        "cursorPosition" : "296,24",
+        "scrollLine" : "291"
+    },
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

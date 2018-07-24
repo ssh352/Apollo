@@ -1,0 +1,173 @@
+#pragma once
+#include <string>
+#include <ThostFtdcMdApi.h>
+#include <ThostFtdcTraderApi.h>
+#include <ThostFtdcUserApiStruct.h>
+#include "AbstractTdApi.h"
+#include <vector>
+#include <deque>
+#include<map>
+#include <thread>
+#include<afxwin.h>
+#include "AbstractPortfolioManager.h"
+#include "AbstractParameterPersistencer.h"
+#include "AbstractInstrumentMap.h"
+#include "AbstractInstrumentCommissionRateMap.h"
+#include "AbstractMDDB.h"
+#include "AbstractTimer.h"
+#include "LOGGER.h"
+#include <memory>
+#include <atomic>
+//#include "SimulateServer.h"
+using namespace std;
+using namespace CTPTOOL;
+
+
+#define STR(s) #s
+namespace CTP {
+	class CMdSpi;
+	class CTraderSpi;
+	class CtpRuntime;
+	class CTPStrategyManager;
+}
+namespace Simulate {
+	class SimulateServer;
+	class SimulateStrategyManager;
+};
+namespace Abstract {
+	class MTOrderExcuter;
+}
+using namespace CTP;
+using namespace Simulate;
+namespace Abstract {
+	BASELIB_API enum StrategyStatus{
+		uninit = 1,
+		running=2,
+		initing=3,
+		initted=4,
+		stop=5,
+		stoped=6,
+		unloading = 7	    
+	};
+	 class BASELIB_API AbstractStrategy
+	{
+	public:
+		friend class CMdSpi; //友元
+		friend class CTraderSpi;// 友元
+		friend class Simulate::SimulateServer;//友元
+		friend class TdApiWrapper;
+		friend class CtpRuntime;
+		friend class MTOrderExcuter;
+		friend class CTPStrategyManager;
+		friend class SimulateStrategyManager;
+		AbstractStrategy();
+		virtual ~AbstractStrategy();
+		virtual boolean IsInstanceOf(string classname);
+		virtual string GetStrategyID() final; //获得策略的id
+		virtual string getStrategyName() final;
+		virtual void setTdApi(CThostFtdcTraderApi* tdapi) final;
+		virtual void setMdApi(CThostFtdcMdApi *mdapi) final;		
+		StrategyStatus AbstractStrategy::getStatus();
+		virtual void setStatus (StrategyStatus status)final;
+		virtual void setBrokerid(string brokerid )final; 
+		virtual void setInvestid(string investid)final;
+		virtual vector<string> getSubscribe() final;
+		virtual void setFrontid(int frontid) final;
+		virtual void setSessionid(int sessionid) final;
+		virtual void setTradingDay(TThostFtdcDateType	TradingDay) final;
+		virtual string GetDllPath() final;
+		virtual void SetDllPath(string dllpath) final;
+		virtual void SetPortfolioManager(shared_ptr<AbstractPortfolioManager>  portfoliomanager);
+		virtual void SetParameterPersistencer(shared_ptr<AbstractParameterPersistencer>  parameterpersistencer);
+		virtual void SetInstrumentMap(shared_ptr<AbstactInstrumentMap> instrumentmap);
+		virtual void SetInstrumentComissionRateMap(shared_ptr<AbstractInstrumentCommissionRateMap> instrumentcommissionratemap);
+		virtual void SetLogger(shared_ptr<LOGGER> logger);
+		virtual void SetMDDB(shared_ptr<AbstractMDDB> mddb);
+		virtual void SetParameter(map<string,double> param);//设置参数
+		virtual void SetTimer(shared_ptr<AbstractTimer> timer);
+		virtual map<string, pair<double, double>> GetParameterArea();//获取参数优化空间
+		boolean HasInit();
+		
+		void Init() ;	
+	public:
+		vector<string>  GetPara();		
+		shared_ptr<AbstractPortfolioManager>  GetPortfolioManager();
+		map<string, double> GetIndicators();//获得即时的指标 在回测非常有用
+	private:
+		void  putMarketData(CThostFtdcDepthMarketDataField * marketdata);//外部来的数据需由此派发
+		void  putTimeData(tm t);
+		void  RspOrderInsert(CThostFtdcInputOrderField *pInputOrder, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast);// 所有的插入由响应由此派发
+		void  RtnOrder(CThostFtdcOrderField *pOrder);
+		void  RtnTrade(CThostFtdcTradeField *pTrade); //成交回报由此派发	
+		void  RspOrderAction(CThostFtdcInputOrderActionField *pInputOrderAction, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast);
+		void  OnRspQryInvestorPosition(CThostFtdcInvestorPositionField *pInvestorPosition, int nRequestID, bool bIsLast); //重建持仓队列
+		void  OnRspQryOrder(CThostFtdcOrderField *pOrder, int nRequestID, bool bIsLast);//返回挂单的单子
+		void  OnRspQryTrade(CThostFtdcTradeField *pTrade, int nRequestID, bool bIsLast);//返回成交的单子
+		void SetIsSimulate(bool issimulate); //是否为simulate 如果是就传入true 否则传入false
+		bool  IsEventlistEmpty();//缓存的消息队列是否为空 主要用于模拟环境 使得模拟服务器重新与策略同步。
+		thread* t; //后台线程
+	protected:
+		CRITICAL_SECTION cm;
+		vector<string> inheritchain; //继承链 抽象类不允许多重继承
+		bool issmiulate;   //是否是模拟环境
+
+
+	private://为了将各种成交行情回报串行化的缓存队列
+		deque<CThostFtdcInputOrderField> reqorderlist; //报单命令的
+		deque<CThostFtdcTradeField> tradeorderlist; //成交回报队列
+		deque<CThostFtdcOrderField>  orderlist;    //挂单回报队列
+		deque<CThostFtdcDepthMarketDataField> marketdatalist;
+		deque<tm> timelist;//时间消息
+	
+		//--
+		StrategyStatus backthreadstatus;//后台线程是否已经开启	    
+		void eventloop();
+		void start();
+		static atomic<int> orderref;
+	    protected:
+		   virtual void OnRtnTrade(CThostFtdcTradeField *pTrade) = 0; //成交回报		
+		   virtual void OnRspOrderAction(CThostFtdcInputOrderActionField *pInputOrderAction, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) = 0;
+		   virtual void OnRtnDepthMarketData(CThostFtdcDepthMarketDataField *pDepthMarketData) = 0; //行情接收函数
+		   virtual void OnRspOrderInsert(CThostFtdcInputOrderField *pInputOrder, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) = 0;
+		   virtual void OnRtnOrder(CThostFtdcOrderField *pOrder) = 0;
+		   virtual  void OnTime(tm t) = 0;
+		   virtual void OnInit() = 0;
+		   virtual void OnReset();//重置
+		   /* 这个方法主要用在 交易单个品种时候 */
+	/*	   CThostFtdcInputOrderField CreateOrder(char* instrumentid, double price, int volume, char direction, char orderpricetype, char timecondition);*/
+
+		   //是否开仓单
+		   CThostFtdcInputOrderField CreateOrder(char* instrumentid, double price, int volume, TThostFtdcDirectionType direction, TThostFtdcOrderPriceTypeType orderpricetype, TThostFtdcTimeConditionType timecondition, char CombOffsetFlag);
+		   void AutoCloseOrder(char* instrumentid, double price, TThostFtdcDirectionType direction, TThostFtdcOrderPriceTypeType orderpricetype, TThostFtdcTimeConditionType timecondition);
+		   StrategyStatus status;
+		   string brokerid;
+		   string investid;
+		   string strategyname;
+		   string author;//作者
+		   string version;//版本
+		   string dllpath;//加载的路径
+		   string desc; //策略描述
+		   AbstractTdApi* tdapi;
+		   CThostFtdcMdApi *mdapi;
+		   int frontid;
+		   int sessionid;
+		   bool hasinit;  //是否已经初始化
+		   TThostFtdcDateType	TradingDay;
+		   vector<string> paralist;
+		   vector<string> subscribelist; //订阅列表
+		   virtual string GetOrderRef() final;        //得到报单引用
+		   virtual string GetNewOrderRef() final;  //得到新的报单引用
+		   
+		   int strategyid;	
+		   static atomic<int>  requestid;
+		   map<string, double> indicators;//指标
+		   shared_ptr<AbstractPortfolioManager>  portfoliomanager;
+		   shared_ptr<AbstractParameterPersistencer> parampersistencer; //持久化
+		   shared_ptr<AbstactInstrumentMap> instrumentmap;//品种信息
+		   shared_ptr<AbstractInstrumentCommissionRateMap> instrumentcommissionmap;//费率信息
+		   shared_ptr<LOGGER> logger;//日志
+		   shared_ptr<AbstractTimer> timer;
+		   shared_ptr<AbstractMDDB> mddb; //行情数据库
+
+	};
+}

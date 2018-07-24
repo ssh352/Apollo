@@ -1,0 +1,4 @@
+﻿C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V140\Microsoft.CppBuild.targets(1189,5): warning MSB8012: TargetPath(F:\quantprogram\StrategyXXB\trunk\x64\Debug\StrategyXXB.dll) does not match the Linker's OutputFile property value (F:\quantprogram\StrategyXXB\trunk\x64\Debug\strategydll\StrategyXXB.dll). This may cause your project to build incorrectly. To correct this, please make sure that $(OutDir), $(TargetName) and $(TargetExt) property values match the value specified in %(Link.OutputFile).
+    正在创建库 F:\quantprogram\StrategyXXB\trunk\x64\Debug\StrategyXXB.lib 和对象 F:\quantprogram\StrategyXXB\trunk\x64\Debug\StrategyXXB.exp
+  StrategyXXB.vcxproj -> F:\quantprogram\StrategyXXB\trunk\x64\Debug\StrategyXXB.dll
+  StrategyXXB.vcxproj -> F:\quantprogram\StrategyXXB\trunk\x64\Debug\StrategyXXB.pdb (Full PDB)

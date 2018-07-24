@@ -1,0 +1,860 @@
+#include "stdafx.h"
+#include "StrategyDeviate.h"
+
+
+StrategyDeviate::StrategyDeviate()
+{
+	ReadCSVFile("监控主力合约相关信息模拟盘.csv");
+
+	GetPara();
+	this->paralist = m_vecPara;
+	this->strategyid = 3000;
+	this->strategyid_str = "3000";
+	this->subscribelist = m_listInstructmentID;
+	/*iOrderNum = 30000000;
+	iOrderQue = 30000000;*/
+
+	bTest = false;
+	dTotalMoney = 100000.00;
+	iPosition = 1;
+
+	//................测试用.....................//
+	bTest = false;
+	iTestTime = 0;
+
+	m_dWinStop = 0.005;
+
+	m_dDeviateRatio = 0.03;
+	m_dBailRatio = 0.12;
+	m_dAddRatio = 0.0066;
+
+	this->strategyname = "向上勾头策略";
+	iCountTime = 0;
+
+}
+
+
+StrategyDeviate::~StrategyDeviate()
+{
+}
+
+//读取CSV文件
+void StrategyDeviate::ReadCSVFile(CString str) {
+	CFile SourceFile;   //数据文件
+
+	CString SourceData;  //定义临时变量保存一条记录;
+						 //只读方式打开文件;						 //BeginWaitCursor();
+	SourceFile.Open(str, CFile::modeRead);
+	int i = 0;
+	//CArchive类来操作文件;
+	CArchive ar(&SourceFile, CArchive::load);
+	CString temp;
+
+	//循环读取文件，直到文件结束
+	int iStart;
+	CRecordData tmpRecordData;
+	CString strInstrucmentID, strLimitPrice, str2Price, strPrice, strLever, strSQS, strRange;
+	CString strTmp;
+	double dLimitPrice;
+	while (NULL != ar.ReadString(SourceData))
+	{
+		i = i + 1;
+		iStart = 0;
+		if (i > 1)  //舍弃第一行文件头；
+		{
+			//主力合约代码；
+			tmpRecordData = CRecordData::CRecordData();
+
+			//合约名称；
+			iStart = SourceData.Find(',', iStart);
+
+			//合约代码
+			strInstrucmentID = SourceData.Mid(iStart + 1, SourceData.Find(',', iStart + 1) - iStart - 1);
+			iStart = SourceData.Find(',', iStart + 1);
+
+			m_listInstructmentID.push_back(strInstrucmentID.GetBuffer(0));
+			strInstrucmentID.ReleaseBuffer();
+			//首日涨停价；
+			strLimitPrice = SourceData.Mid(iStart + 1, SourceData.Find(',', iStart + 1) - iStart - 1);
+			tmpRecordData.m_dRasingLimit = atof(strLimitPrice.GetBuffer(0));
+			iStart = SourceData.Find(',', iStart + 1);
+			strLimitPrice.ReleaseBuffer();
+
+			//二板
+			strTmp = SourceData.Mid(iStart + 1, SourceData.Find(',', iStart + 1) - iStart - 1);
+			iStart = SourceData.Find(',', iStart + 1);
+
+			//三板
+			strTmp = SourceData.Mid(iStart + 1, SourceData.Find(',', iStart + 1) - iStart - 1);
+			iStart = SourceData.Find(',', iStart + 1);
+
+			//两跳价格；
+			str2Price = SourceData.Mid(iStart + 1, SourceData.GetLength());
+			tmpRecordData.m_dPrice2T = atof(str2Price.GetBuffer(0));
+			iStart = SourceData.Find(',', iStart + 1);
+			str2Price.ReleaseBuffer();
+
+			//一跳价格
+			strPrice = SourceData.Mid(iStart + 1, SourceData.GetLength());
+			tmpRecordData.m_dPrice1T = atof(strPrice.GetBuffer(0));
+			iStart = SourceData.Find(',', iStart + 1);
+			strPrice.ReleaseBuffer();
+
+			//杠杆
+			strLever = SourceData.Mid(iStart + 1, SourceData.GetLength());
+			tmpRecordData.m_iLever = atoi(strLever);
+			iStart = SourceData.Find(',', iStart + 1);
+
+			//是否是上期所；
+			strSQS = SourceData.Mid(iStart + 1, SourceData.GetLength());
+			tmpRecordData.m_iShQS = atoi(strSQS);
+			iStart = SourceData.Find(',', iStart + 1);
+
+			//获得由下往上的幅度；
+			strRange = SourceData.Mid(iStart + 1, SourceData.GetLength());
+			tmpRecordData.m_dDown2UpRange = atof(strRange);
+			iStart = SourceData.Find(',', iStart + 1);
+
+			//获得做多的加仓幅度；
+			strRange = SourceData.Mid(iStart + 1, SourceData.GetLength());
+			tmpRecordData.m_dDown2UpAddRatio = atof(strRange);
+			iStart = SourceData.Find(',', iStart + 1);
+
+			//获得做多的止盈幅度；
+			strRange = SourceData.Mid(iStart + 1, SourceData.GetLength());
+			tmpRecordData.m_dDown2UpWinStop = atof(strRange);
+			iStart = SourceData.Find(',', iStart + 1);
+
+			//获得由上往下的幅度；
+			strRange = SourceData.Mid(iStart + 1, SourceData.GetLength());
+			tmpRecordData.m_dUp2DownRange = atof(strRange);
+			iStart = SourceData.Find(',', iStart + 1);
+
+			//获得做空的加仓幅度；
+			strRange = SourceData.Mid(iStart + 1, SourceData.GetLength());
+			tmpRecordData.m_dUp2DownAddRatio = atof(strRange);
+			iStart = SourceData.Find(',', iStart + 1);
+
+			//获得做空的止盈幅度；
+			strRange = SourceData.Mid(iStart + 1, SourceData.GetLength());
+			tmpRecordData.m_dUp2DownWinStop = atof(strRange);
+			iStart = SourceData.Find(',', iStart + 1);
+
+			//获得保证金比例
+			strRange = SourceData.Mid(iStart + 1, SourceData.GetLength());
+			tmpRecordData.m_dTrustRatio = atof(strRange);
+			iStart = SourceData.Find(',', iStart + 1);
+
+			//获得报警极值；
+			strRange = SourceData.Mid(iStart + 1, SourceData.GetLength());
+			tmpRecordData.m_dAlarmRatio = atof(strRange);
+			iStart = SourceData.Find(',', iStart + 1);
+
+			//获得安全垫值；
+			strRange = SourceData.Mid(iStart + 1, SourceData.GetLength());
+			tmpRecordData.m_dSafeRatio = atof(strRange);
+
+			//获得幅度；
+			m_MapRecordData.insert(pair<CString, CRecordData>(strInstrucmentID, tmpRecordData));
+		}
+	}
+	SourceFile.Close();
+}
+
+//获取参数
+void StrategyDeviate::GetPara() {
+	int iSize = m_MapRecordData.size();
+	string strPara;
+
+	double m_dPrice1T;             //1跳的价格；
+	int m_iLever;                  //品种杠杆倍数；
+	int m_iShQS;                   //判断是否属于上期所品种；0表示不是，1表示是；
+	double m_dDown2UpRange;        //由下往上的幅度；
+	double m_dUp2DownRange;        //由上往下的幅度；
+	double m_dPreSettlement;       //昨天的结算价；   
+	bool bStop;                    //当天永久停止不开仓；
+	CTime m_tUpperTime;            //记录涨停时间；
+	CTime m_tLowerTime;            //记录跌停时间；
+	double m_dTrustRatio;          //保证金比例；
+	int m_iAddTimes;               //加仓次数；每个品种加仓次数不得大于2；
+
+
+
+	for (map<string, CRecordData>::iterator i = m_MapRecordData.begin(); i != m_MapRecordData.end(); i++)
+	{
+
+		char str[1024];
+		memset(str, 0, 1024);
+		strPara = i->first.c_str();
+		sprintf(str, "%.3f", i->second.m_dPrice1T);
+		strPara = "合约代码：" + strPara + ";" + "1跳价格：" + str + ";";
+		memset(str, 0, 1024);
+		sprintf(str, "%d", i->second.m_iLever);
+		strPara = strPara + "杠杆倍数：" + str + ";";
+		memset(str, 0, 1024);
+		sprintf(str, "%.3f", i->second.m_dUp2DownRange);
+		strPara = strPara + "由上往下的幅度：" + str + ";";
+		memset(str, 0, 1024);
+		sprintf(str, "%.3f", i->second.m_dUp2DownAddRatio);
+		strPara = strPara + "加仓幅度：" + str + ";";
+		memset(str, 0, 1024);
+		sprintf(str, "%.3f", i->second.m_dUp2DownWinStop);
+		strPara = strPara + "止盈比例：" + str + ";";
+		memset(str, 0, 1024);
+		sprintf(str, "%.3f", i->second.m_dTrustRatio);
+		strPara = strPara + "保证金比例：" + str + ";";
+		memset(str, 0, 1024);
+		sprintf(str, "%.3f", i->second.m_dAlarmRatio);
+		strPara = strPara + "偏差极值：" + str + ";";
+		memset(str, 0, 1024);
+		sprintf(str, "%.3f", i->second.m_dSafeRatio);
+		strPara = strPara + "安全垫：" + str + ";";
+
+		m_vecPara.push_back(strPara);
+	}
+}
+
+void StrategyDeviate::OnTime(tm t) {
+	m_listOrder = this->portfoliomanager->GetOrderFormStrategy(this->strategyid_str);
+	vector<CThostFtdcInputOrderField> OrderInputList = this->portfoliomanager->orderinputlist;
+	now = t;
+	if (OrderInputList.size() > 0) {
+		for (int i = 0; i < OrderInputList.size(); i++) {
+			if (m_MapOrderInput.count(OrderInputList[i].InstrumentID) == 0)
+				m_MapOrderInput[OrderInputList[i].InstrumentID] = mktime(&t);
+			else {
+				if (m_MapOrderInput[OrderInputList[i].InstrumentID] - mktime(&t) >= 30) {
+					sndPlaySound("指令单错误.wav", SND_ASYNC);
+					LOG("合约%sOrderRef号%s无法报单,请检查", m_listOrder[i].InstrumentID, m_listOrder[i].OrderRef);
+				}
+			}
+		}
+	}
+
+	if (t.tm_hour >= 14 && t.tm_min >= 30 && t.tm_hour < 15) {
+		if (!bCloseAll)
+			bCloseAll = true;
+	}
+	else {
+		bCloseAll = false;
+		for (int i = 0; i < m_listOrder.size(); i++) {
+			///LOG("系统时间%ld,队列中有%s合约,提交时间%ld", mktime(&t),OrderList[i].InstrumentID, GetTimeStamp(OrderList[i].InsertDate, OrderList[i].InsertTime));
+			if (*m_listOrder[i].CombOffsetFlag == THOST_FTDC_OFEN_Open) {
+				if (mktime(&t) - GetTimeStamp(m_listOrder[i].InsertDate, m_listOrder[i].InsertTime) >= 120) {
+					CThostFtdcInputOrderActionField inputOrderActionField;
+					inputOrderActionField = MakeCancelOrder(m_listOrder[i]);
+					int result = this->tdapi->ReqOrderAction(&inputOrderActionField, this->requestid++);
+				}
+			}
+		}
+	}
+
+	bTime1015 = false;
+
+	if (t.tm_hour == 10 && t.tm_min > 7 && t.tm_min<30)
+	{
+		bTime1015 = true;
+	}
+
+	bTime1130 = false;
+
+	if (t.tm_hour == 11 && t.tm_min > 22 && t.tm_min<30)
+	{
+		bTime1130 = true;
+	}
+
+	bTimeControlDown2Up = false;
+	if (t.tm_hour == 9 && t.tm_min <= 30)
+	{
+		bTimeControlDown2Up = true;
+	}
+
+	if (t.tm_hour == 14 && t.tm_min >= 28)
+	{
+		bTimeControlDown2Up = true;
+	}
+
+	if (t.tm_hour == 15)
+	{
+		bTimeControlDown2Up = true;
+	}
+
+	if (t.tm_hour == 23 && t.tm_min == 29)
+	{
+		bTimeControlDown2Up = true;
+	}
+
+}
+//OnTick
+void StrategyDeviate::OnRtnDepthMarketData(CThostFtdcDepthMarketDataField *pDepthMarketData) {
+	//Step0:获得合约及品种的相关信息：
+	//LOG("123");
+	m_MapTick[pDepthMarketData->InstrumentID] = *pDepthMarketData;
+	string strInstrumentID = pDepthMarketData->InstrumentID;
+	string strDay = pDepthMarketData->TradingDay;
+	double dLastPrice = pDepthMarketData->LastPrice;
+	double dPreSettlementPrice = pDepthMarketData->PreSettlementPrice;
+	string strUpdateTime = pDepthMarketData->UpdateTime;
+	double dBidPrice1 = pDepthMarketData->BidPrice1;
+	double dBidVolume1 = pDepthMarketData->BidVolume1;
+	double dAskPrice1 = pDepthMarketData->AskPrice1;
+	double dAskVolume1 = pDepthMarketData->AskVolume1;
+	double dVolume = pDepthMarketData->Volume;
+	double dTurnover = pDepthMarketData->Turnover;
+	double dUpperLimitPrice = pDepthMarketData->UpperLimitPrice;
+	double dLowerLimitPrice = pDepthMarketData->LowerLimitPrice;
+	double dSettlementPrice;
+	CTime tNow;
+	CTimeSpan tTimeSpan;
+	tNow = GetTime(strDay, strUpdateTime);
+	//bool bCloseAll = false;     //现价平仓所有持仓单；
+
+	int iHour = atoi(strUpdateTime.substr(0, 2).c_str());
+	int iMiniute = atoi(strUpdateTime.substr(2, 2).c_str());
+	int iSecond = atoi(strUpdateTime.substr(5, 2).c_str());
+
+	long  m1, m2 = 0;
+
+	if (m_MapRecordData[strInstrumentID].m_iShQS == 0)
+	{
+		dSettlementPrice = pDepthMarketData->AveragePrice;    //郑州的不用除以杠杆；
+	}
+	else
+	{
+		dSettlementPrice = pDepthMarketData->AveragePrice / m_MapRecordData[strInstrumentID].m_iLever;   //其他交易所需要除以杠杆得到
+	}
+	m_MapRecordData[strInstrumentID].m_dPreSettlement = dPreSettlementPrice;
+	double dDeviateRatio = (dLastPrice - dSettlementPrice) / dPreSettlementPrice * 100;
+
+	if (bCloseAll)  //14：29，开始所有的清仓动作；
+	{
+		//遍历剩余的开仓成交队列
+		m_listPosition = this->portfoliomanager->GetPostionDetail(pDepthMarketData->InstrumentID, THOST_FTDC_D_Buy);
+		int iSize = m_listPosition.size();
+		for (int i = 0; i < iSize; i++)
+		{
+			if (strInstrumentID == m_listPosition[i].InstrumentID)
+			{
+				/*if (m_vecOpenTradeOrderData[i].m_bMustClose)
+				{*/
+				//完成反向平仓动作；
+				CThostFtdcInputOrderField inputOrderField;
+				if (m_listPosition[i].Direction == THOST_FTDC_D_Buy) {
+					inputOrderField = MakeOrder(m_listPosition[i].InstrumentID, dBidPrice1, m_listPosition[i].Volume, THOST_FTDC_D_Sell, THOST_FTDC_OPT_LimitPrice, THOST_FTDC_TC_GFD);
+				}
+				else {
+					inputOrderField = MakeOrder(m_listPosition[i].InstrumentID, dAskPrice1, m_listPosition[i].Volume, THOST_FTDC_D_Buy, THOST_FTDC_OPT_LimitPrice, THOST_FTDC_TC_GFD);
+				}
+				int result = this->tdapi->ReqOrderInsert(&inputOrderField, this->requestid++);
+				//}
+			}
+		}
+
+		//遍历未成交的平仓队列；
+		m_listOrder = this->portfoliomanager->GetOrder();
+		iSize = m_listOrder.size();
+		for (int i = 0; i < iSize; i++)
+		{
+			if (strInstrumentID == m_listOrder[i].InstrumentID && (*m_listOrder[i].CombOffsetFlag == THOST_FTDC_OFEN_Close || *m_listOrder[i].CombOffsetFlag == THOST_FTDC_OFEN_CloseToday))
+			{
+				double dTmp = m_listOrder[i].LimitPrice - dAskPrice1;
+				if (dTmp / dPreSettlementPrice <-0.02)
+				{
+					sndPlaySound("指令单错误.wav", SND_ASYNC);
+				}
+				else {
+					CThostFtdcInputOrderActionField inputOrderActionField;
+					inputOrderActionField = MakeCancelOrder(m_listOrder[i]);
+					int result = this->tdapi->ReqOrderAction(&inputOrderActionField, this->requestid++);
+				}
+			}
+		}
+	}
+	else
+	{
+		//Step1：输出偏离度较大的合约相关信息；
+		OutPutDeviateData(strInstrumentID, strDay + " " + strUpdateTime, dSettlementPrice, dLastPrice, dDeviateRatio, m_MapRecordData[strInstrumentID].m_dAlarmRatio * 100);
+
+		//Step2：策略运行；
+		Deviate(pDepthMarketData, dDeviateRatio / 100, dSettlementPrice);
+	}
+}
+
+//根据字符串返回CTime
+CTime StrategyDeviate::GetTime(string strDate, string strTime) {
+
+	int   iYear, iMonth, iDate, iHour, iMin, iSec;
+	iYear = atoi(strDate.substr(0, 4).c_str());
+	iMonth = atoi(strDate.substr(4, 2).c_str());
+	iDate = atoi(strDate.substr(6, 2).c_str());
+	iHour = atoi(strTime.substr(0, 2).c_str());
+	iMin = atoi(strTime.substr(3, 2).c_str());
+	iSec = atoi(strTime.substr(6, 2).c_str());
+	CTime   t(iYear, iMonth, iDate, iHour, iMin, iSec);
+	return t;
+}
+
+//组装报单请求
+CThostFtdcInputOrderField StrategyDeviate::MakeOrder(char* instrumentid, double price, int volume, char direction, char ordertype, char timecondition) {
+	CThostFtdcInputOrderField order;
+	(void)memset(&order, 0, sizeof(order));
+	strcpy(order.BrokerID, this->brokerid.c_str());
+	strcpy(order.InvestorID, this->investid.c_str());
+	strcpy(order.InstrumentID, instrumentid);
+	sprintf(order.OrderRef, "%s", this->GetNewOrderRef().c_str());
+	///强平原因: 非强平
+	order.ForceCloseReason = THOST_FTDC_FCC_NotForceClose;
+	///自动挂起标志: 否
+	order.IsAutoSuspend = 0;
+	///用户强评标志: 否
+	order.UserForceClose = 0;
+	///投机套保标识：投机
+	order.CombHedgeFlag[0] = THOST_FTDC_HFEN_Speculation;
+	///触发条件
+	order.ContingentCondition = THOST_FTDC_CC_Immediately;
+	///价格
+	order.LimitPrice = price;
+	///数量
+	order.VolumeTotalOriginal = volume;
+	///成交量类型
+	order.VolumeCondition = THOST_FTDC_VC_AV;
+	///最小成交量
+	order.MinVolume = 1;
+	///买卖方向
+	order.Direction = direction;
+	///相反的方向	
+	char opdir;
+	if (direction == THOST_FTDC_D_Sell)
+		opdir = THOST_FTDC_D_Buy;
+	if (direction == THOST_FTDC_D_Buy)
+		opdir = THOST_FTDC_D_Sell;
+	///有效期类型
+	order.TimeCondition = timecondition;
+	///报单条件
+	order.OrderPriceType = ordertype;
+	///开仓类型
+	order.CombOffsetFlag[0] = THOST_FTDC_OFEN_Open;
+	///如果有仓位则为平仓单
+	int allposition = this->portfoliomanager->GetPostionDetailCount(instrumentid, opdir);
+	int todayposition = this->portfoliomanager->GetPostionDetailCountToday(instrumentid, opdir, this->TradingDay);
+	if (allposition != todayposition)
+		int index = 0;
+	if (allposition > 0) {
+		/*if (opdir == THOST_FTDC_D_Buy)
+		//LOG("合约%s有多仓", instrumentid);
+		if (opdir == THOST_FTDC_D_Sell)
+		//LOG("合约%s有空仓", instrumentid);
+		//LOG("TradingDay:%s", this->TradingDay);*/
+		if (allposition - todayposition > 0)
+			order.CombOffsetFlag[0] = THOST_FTDC_OFEN_CloseYesterday;
+		else
+			order.CombOffsetFlag[0] = THOST_FTDC_OFEN_CloseToday;
+	}
+	return order;
+}
+
+//根据交易所的date和time返回时间戳
+time_t StrategyDeviate::GetTimeStamp(string date, string time) {
+	tm tm;
+	int year, month, day, hour, minute, second;
+	year = atoi((date.substr(0, 4)).c_str());
+	month = atoi((date.substr(4, 2)).c_str());
+	day = atoi((date.substr(6, 2)).c_str());
+	hour = atoi((time.substr(0, 2)).c_str());
+	minute = atoi((time.substr(3, 2)).c_str());
+	second = atoi((time.substr(6, 2)).c_str());
+	tm.tm_year = year - 1900;
+	tm.tm_mon = month - 1;
+	tm.tm_mday = day;
+	tm.tm_hour = hour;
+	tm.tm_min = minute;
+	tm.tm_sec = second;
+	tm.tm_isdst = 0;
+	time_t t = mktime(&tm); ///已经减了8个时区  
+	return t; ///秒时间 	
+}
+
+//组装撤单请求
+CThostFtdcInputOrderActionField StrategyDeviate::MakeCancelOrder(CThostFtdcOrderField order) {
+	CThostFtdcInputOrderActionField inputOrderActionField;
+	(void)memset(&inputOrderActionField, 0, sizeof(inputOrderActionField));
+	strcpy(inputOrderActionField.BrokerID, this->brokerid.c_str());
+	strcpy(inputOrderActionField.InvestorID, this->investid.c_str());
+	strcpy(inputOrderActionField.OrderRef, order.OrderRef);
+	strcpy(inputOrderActionField.InstrumentID, order.InstrumentID);
+	inputOrderActionField.FrontID = order.FrontID;
+	inputOrderActionField.SessionID = order.SessionID;
+	inputOrderActionField.ActionFlag = THOST_FTDC_AF_Delete;
+	return inputOrderActionField;
+}
+
+//主逻辑
+void StrategyDeviate::Deviate(CThostFtdcDepthMarketDataField *pDepthMarketData, double dDeviateRatio, double dSettlementPrice)
+{
+	//......................................................//
+	int iStatus = 1000;     //开平仓的状态，正常为0；
+							//COrderData tmpOrderData = COrderData::COrderData();
+
+	double dUpperLimitPrice = pDepthMarketData->UpperLimitPrice;
+	double dLowerLimitPrice = pDepthMarketData->LowerLimitPrice;
+
+	m_dDeviateRatio = m_MapRecordData[pDepthMarketData->InstrumentID].m_dDown2UpRange;
+	m_dBailRatio = m_MapRecordData[pDepthMarketData->InstrumentID].m_dTrustRatio;
+	m_dAddRatio = m_MapRecordData[pDepthMarketData->InstrumentID].m_dDown2UpAddRatio;
+
+	CString strTmppp = pDepthMarketData->InstrumentID;
+
+	int iOpenLots = ((double)dTotalMoney) / (((double)iPosition)*m_MapRecordData[pDepthMarketData->InstrumentID].m_iLever*m_dBailRatio*pDepthMarketData->AskPrice1);
+	if (iOpenLots == 0)
+	{
+		iOpenLots = 1;
+	}
+
+	//Step1:从上往下策略1,条件判断；
+	bool bTimeControlDown2Up = false;     //时间控制；9：00—9：30不开仓；14：28以后不开仓； 在从低往上的时候，如果高开2%,不受9：00到9：30的限制；如果低开2%,则不受限制；  
+	CTime tOpen;                        //记录开仓时刻；
+	CTime tNow;                         //记录当前时刻；
+	CTimeSpan tTimeSpan;                //时间间隔；
+
+
+	string strDay = pDepthMarketData->TradingDay;
+	string strUpdateTime = pDepthMarketData->UpdateTime;
+	int iHour = atoi(strUpdateTime.substr(0, 2).c_str());
+	int iMiniute = atoi(strUpdateTime.substr(2, 2).c_str());
+	int iSecond = atoi(strUpdateTime.substr(5, 2).c_str());
+	tNow = GetTime(strDay, strUpdateTime);
+
+
+	//增加判断，当低开或者高开的时候，舍去09：30不准开单的限制；
+	if (!m_MapRecordData[pDepthMarketData->InstrumentID].bOneTime)
+	{
+		if (iHour == 9 && iMiniute == 0)
+		{
+			m_MapRecordData[pDepthMarketData->InstrumentID].bOpenHigh = false;
+			m_MapRecordData[pDepthMarketData->InstrumentID].bOpenLow = false;
+			m_MapRecordData[pDepthMarketData->InstrumentID].bOpenHigh = ConditionOpenHigh(pDepthMarketData->PreSettlementPrice, pDepthMarketData->LastPrice, 0.02);
+			m_MapRecordData[pDepthMarketData->InstrumentID].bOneTime = true;
+		}
+	}
+
+	//时间控制;09：00—09：30； 15：00：23：29分等开仓限制；
+	if (m_MapRecordData[pDepthMarketData->InstrumentID].bOpenHigh)
+		bTimeControlDown2Up = false;
+	else
+		bTimeControlDown2Up = TimeControl(tNow);
+
+	if (strcmp(strTmppp, "RM709") == 0)
+		int index = 0;
+
+
+	//-------------------------------09:30------------------------------//
+	if (abs(pDepthMarketData->AskPrice1 - dLowerLimitPrice) < 0.1)
+	{
+		m_MapRecordData[pDepthMarketData->InstrumentID].m_bOpen = false;   //跌停不开仓；
+		LOG("跌停品种:%s，跌停价格：%d", pDepthMarketData->InstrumentID, pDepthMarketData->AskPrice1);
+
+		if (m_MapRecordData[pDepthMarketData->InstrumentID].iCountLimitTimes == 0)
+		{
+			m_MapRecordData[pDepthMarketData->InstrumentID].iCountLimitTimes = m_MapRecordData[pDepthMarketData->InstrumentID].iCountLimitTimes + 1;
+			//记录时间；
+			m_MapRecordData[pDepthMarketData->InstrumentID].m_tLowerTime = tNow;
+		}
+		else
+		{
+			m_MapRecordData[pDepthMarketData->InstrumentID].iCountLimitTimes = m_MapRecordData[pDepthMarketData->InstrumentID].iCountLimitTimes + 1;
+
+			//.........................//
+			CTimeSpan timeSpan1;
+			timeSpan1 = tNow - m_MapRecordData[pDepthMarketData->InstrumentID].m_tLowerTime;
+			if (m_MapRecordData[pDepthMarketData->InstrumentID].iCountLimitTimes > 1 && timeSpan1.GetTotalSeconds() >= 120)
+			{
+				m_MapRecordData[pDepthMarketData->InstrumentID].bStop = true;
+				LOG("%s品种状态:连续跌停超时，不开仓！", pDepthMarketData->InstrumentID);
+			}
+		}
+	}
+	else
+	{
+		if (!m_MapRecordData[pDepthMarketData->InstrumentID].bStop)
+		{
+			m_MapRecordData[pDepthMarketData->InstrumentID].iCountLimitTimes = 0;
+		}
+		m_MapRecordData[pDepthMarketData->InstrumentID].m_bOpen = true;
+	}
+
+
+	//如果现在结算价低于安全垫，那么偏离度应该扩大幅度；
+	double dTmp;
+	dTmp = (dSettlementPrice - pDepthMarketData->PreSettlementPrice) / pDepthMarketData->PreSettlementPrice;  //结算价的偏离幅度；
+	if (dTmp > m_MapRecordData[pDepthMarketData->InstrumentID].m_dSafeRatio)
+	{
+		m_dDeviateRatio = m_dDeviateRatio + dTmp;
+	}
+
+	//统计7分钟内，下跌大于0.7%，则加仓；
+	if (m_MapRecordData[pDepthMarketData->InstrumentID].bHasOrder && (!bTimeControlDown2Up) && m_MapRecordData[pDepthMarketData->InstrumentID].m_bOpen && !m_MapRecordData[pDepthMarketData->InstrumentID].bStop && m_MapRecordData[pDepthMarketData->InstrumentID].m_iAddTimes<3)
+	{
+		tTimeSpan = tNow - m_MapRecordData[pDepthMarketData->InstrumentID].m_tLastOpen;
+		int iSecondCount = tTimeSpan.GetTotalSeconds();
+
+		int iTimeJian = 420;
+
+		if (bTime1015)
+		{
+			iTimeJian = 1320;
+		}
+
+		if (bTime1130)
+		{
+			iTimeJian = 7620;
+		}
+
+		if (iSecondCount <= iTimeJian)
+		{
+			//判断成交价
+			if ((pDepthMarketData->LastPrice - m_MapRecordData[pDepthMarketData->InstrumentID].m_dOpenPrice) / pDepthMarketData->PreSettlementPrice < -m_dAddRatio)
+			{
+				//判断Ask1的价格，是否在两跳之内；
+				if (abs(pDepthMarketData->LastPrice - pDepthMarketData->AskPrice1) <= m_MapRecordData[pDepthMarketData->InstrumentID].m_dPrice2T)
+				{
+					//.......发送订单......//
+					while (iOpenTime < 6)
+					{
+
+
+						/*char strOrderRef[1024];
+						memset(strOrderRef, 0, 1024);*/
+						iOrderNum = iOrderNum + 1;
+						/*sprintf_s(strOrderRef, "%d", iOrderNum);*/
+						CThostFtdcInputOrderField inputOrderField;
+						inputOrderField = MakeOrder(pDepthMarketData->InstrumentID, pDepthMarketData->AskPrice1, iOpenLots, THOST_FTDC_D_Buy, THOST_FTDC_OPT_LimitPrice, THOST_FTDC_TC_GFD);
+						iStatus = this->tdapi->ReqOrderInsert(&inputOrderField, this->requestid++);
+						if (iStatus == 0) {
+							LOG("加仓合约:%s开仓价格:%f开仓手数:%d偏离度:%.3f", pDepthMarketData->InstrumentID, pDepthMarketData->BidPrice1, iOpenLots, dDeviateRatio);
+							////.............记录相关信息............//
+							m_MapRecordData[pDepthMarketData->InstrumentID].m_tLastOpen = tNow;              //下单时间；
+							m_MapRecordData[pDepthMarketData->InstrumentID].m_dOpenPrice = pDepthMarketData->AskPrice1;       //下单价格；
+							m_MapRecordData[pDepthMarketData->InstrumentID].bHasOrder = true;                //已经有单子；
+							m_MapRecordData[pDepthMarketData->InstrumentID].m_dPrice = pDepthMarketData->LastPrice;           //下单时刻的最新价；
+							m_MapRecordData[pDepthMarketData->InstrumentID].iDirection = 1;
+							break;
+						}
+
+					}
+				}
+			}
+		}
+	}
+
+	//判定买入点，是否允许开仓；
+	if (m_MapRecordData[pDepthMarketData->InstrumentID].m_bOpen && !m_MapRecordData[pDepthMarketData->InstrumentID].bStop)
+	{
+		if (dDeviateRatio <-m_dDeviateRatio && (!bTimeControlDown2Up) && (!m_MapRecordData[pDepthMarketData->InstrumentID].bHasOrder))
+		{
+			//如果结算价涨幅>3%，那么不做；
+			if (ConditionMeanPriceDown(pDepthMarketData->PreSettlementPrice, dSettlementPrice, 0.03))   //结算价跌幅超过>3%,那么不做。
+			{
+				//判断Ask1的价格，是否在两跳之内；
+				if (abs(pDepthMarketData->LastPrice - pDepthMarketData->AskPrice1) <= m_MapRecordData[pDepthMarketData->InstrumentID].m_dPrice2T)
+				{
+					//.......发送订单......//
+					while (iOpenTime < 6)
+					{
+						iOrderNum = iOrderNum + 1;
+						if (pDepthMarketData->InstrumentID == "jm1701")
+						{
+							int pp = 0;
+						}
+						CThostFtdcInputOrderField inputOrderField;
+						inputOrderField = MakeOrder(pDepthMarketData->InstrumentID, pDepthMarketData->AskPrice1, iOpenLots, THOST_FTDC_D_Buy, THOST_FTDC_OPT_LimitPrice, THOST_FTDC_TC_GFD);
+						iStatus = this->tdapi->ReqOrderInsert(&inputOrderField, this->requestid++);
+						if (iStatus == 0) {
+							LOG("开仓合约:%s开仓价格:%f开仓手数:%d偏离度:%.3f", pDepthMarketData->InstrumentID, pDepthMarketData->BidPrice1, iOpenLots, dDeviateRatio);
+							////.............记录相关信息............//
+							m_MapRecordData[pDepthMarketData->InstrumentID].m_tLastOpen = tNow;              //下单时间；
+							m_MapRecordData[pDepthMarketData->InstrumentID].m_dOpenPrice = pDepthMarketData->AskPrice1;       //下单价格；
+							m_MapRecordData[pDepthMarketData->InstrumentID].bHasOrder = true;                //已经有单子；
+							m_MapRecordData[pDepthMarketData->InstrumentID].m_dPrice = pDepthMarketData->LastPrice;           //下单时刻的最新价；
+							m_MapRecordData[pDepthMarketData->InstrumentID].iDirection = 1;
+							break;
+						}
+						else {
+							Sleep(100);   //100毫秒；
+							iOpenTime = iOpenTime + 1;
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+//判断是否高开
+bool StrategyDeviate::ConditionOpenHigh(double dLastMeanPrice, double dNowMeanPrice, double dRatio)
+{
+	if (((dNowMeanPrice - dLastMeanPrice) / dLastMeanPrice) > dRatio)
+		return true;
+	else return false;
+}
+
+bool StrategyDeviate::ConditionMeanPriceDown(double dLastMeanPrice, double dNowMeanPrice, double dRatio)
+{
+	bool bConditionControl = true;
+
+	if ((dNowMeanPrice - dLastMeanPrice) / dLastMeanPrice <-dRatio)
+	{
+		bConditionControl = false;
+	}
+	return bConditionControl;
+}
+
+
+//判断是否是相应时间段
+bool StrategyDeviate::TimeControl(CTime tTime)
+{
+	bool bTimeControl = false;
+
+	int iHour = tTime.GetHour();
+	int iMiniute = tTime.GetMinute();
+	if (iHour == 9 && iMiniute <= 30)
+	{
+		bTimeControl = true;
+	}
+
+	if (iHour == 14 && iMiniute >= 28)
+	{
+		bTimeControl = true;
+	}
+
+	if (iHour == 15)
+	{
+		bTimeControl = true;
+	}
+
+	if (iHour == 23 && iMiniute == 29)
+	{
+		bTimeControl = true;
+	}
+
+	return bTimeControl;
+}
+
+//输出偏离度较大的合约相关信息
+void StrategyDeviate::OutPutDeviateData(string strInstrumentID, string strUpdateTime, double dSettlementPrice, double dLastPrice, double dDeviateRatio, double dThresld)
+{
+	//Step1：输出偏离度较大的合约相关信息；
+	if (iCountTime > 100)
+	{
+		if (dDeviateRatio < -dThresld)
+		{
+			//LOG("品种:%s;时间:%s;结算价:%.3f;现价:%.2f;偏离度:%.3f", strInstrumentID, strUpdateTime, dSettlementPrice, dLastPrice, dDeviateRatio);
+			sndPlaySound("信息到达.wav", SND_ASYNC);
+		}
+
+		if (dDeviateRatio < -2.3)
+		{
+			LOG("品种:%s;时间:%s;结算价:%.3f;现价:%.2f;偏离度:%.3f", strInstrumentID, strUpdateTime, dSettlementPrice, dLastPrice, dDeviateRatio);
+			//sndPlaySound("信息到达.wav", SND_ASYNC);
+		}
+
+		iCountTime = 0;
+
+		//输出各个队列状态的状态；
+
+		/*int iSize = m_vecOpenQueueOrderData.size();
+		if (iSize > 0)
+		{
+		LOG("策略开仓未成交队列数:%d", iSize);
+		}
+
+		iSize = m_vecOpenTradeOrderData.size();
+		if (iSize > 0)
+		{
+		LOG("策略开仓成交队列数:%d", iSize);
+		}
+
+		iSize = m_vecCloseQueueOrderData.size();
+		if (iSize > 0)
+		{
+		LOG("策略平仓未成交队列数:%d", iSize);
+		}
+
+		iSize = m_vecCloseTradeOrderData.size();
+		if (iSize > 0)
+		{
+		LOG("策略平仓成交队列数:%d", iSize);
+		}*/
+	}
+	else
+	{
+		iCountTime = iCountTime + 1;
+	}
+}
+
+//成交回报
+void StrategyDeviate::OnRtnTrade(CThostFtdcTradeField *pTrade)
+{
+	int iOpenTime = 0;      //反向做单的次数；
+	bool bFindOrder = false;   // 判断是否存在已有的订单；
+	int iFlagNum;              //标记是哪个单；
+
+							   //判断品种，如果是成交单，//反向开出止盈单；
+	string strOrderRef = pTrade->OrderRef;                        //标记已发送单；
+	char strDirection = pTrade->Direction;
+	TThostFtdcPriceType	Price = pTrade->Price;
+	TThostFtdcVolumeType Volume = pTrade->Volume;
+	string strInstrumentID = pTrade->InstrumentID;
+	string strDate = pTrade->TradeDate;
+	string strTime = pTrade->TradeTime;
+	CTime tTime = GetTime(strDate, strTime);
+	string strTmp1 = (strDirection == '0') ? "多" : "空";
+	int iDirection = (strDirection == '0') ? 1 : -1;
+	//LOG("成交合约：%s 成交价格：%.3f 成交时间：%s 成交手数：%d 方向：%s", strInstrumentID, Price, pTrade->TradeTime, Volume, strTmp1);
+
+	if (Volume > 0 && strDirection == '0')   //如果方向是多'0'，那么放入已开仓队列中；
+	{
+
+		LOG("开仓成交合约：%s成交价格：%.3f成交时间：%s成交手数：%d方向：%s", strInstrumentID, Price, pTrade->TradeTime, Volume, strTmp1);
+		m_MapRecordData[strInstrumentID].m_iAddTimes = m_MapRecordData[strInstrumentID].m_iAddTimes + 1;
+		m_dWinStop = m_MapRecordData[strInstrumentID].m_dDown2UpWinStop;
+		//如果加仓两次，那么修改第一单的止盈价格；
+		if (m_MapRecordData[strInstrumentID].m_iAddTimes == 3)
+		{
+			//................撤销止损单........................//
+			/*	this->orderlist;*/
+
+
+		}
+
+		// 以报单价为最小跳的整数倍，反向平仓；
+		CRecordData tmpData;
+		tmpData = m_MapRecordData[strInstrumentID];
+		int iSQS = tmpData.m_iShQS;
+		int iStatus;
+
+		double dPrice1T = tmpData.m_dPrice1T;
+		double dPrice = Price + int(tmpData.m_dPreSettlement*m_dWinStop / dPrice1T)*dPrice1T;
+
+		//反向平仓单；
+		//FinishOrderClose(strInstrumentID, dPrice, Volume, THOST_FTDC_D_Sell, tTime, strOrderRef, 0);
+		CThostFtdcInputOrderField inputOrderField;
+		inputOrderField = MakeOrder(pTrade->InstrumentID, dPrice, Volume, THOST_FTDC_D_Sell, THOST_FTDC_OPT_LimitPrice, THOST_FTDC_TC_GFD);
+		iStatus = this->tdapi->ReqOrderInsert(&inputOrderField, this->requestid++);
+
+	}
+
+	if (Volume > 0 && strDirection == '1')   //如果方向是空单，那么放入已开仓队列中；止盈单成交；
+	{
+		LOG("平仓成交合约：%s成交价格：%.3f成交时间：%s成交手数：%d方向：%s", strInstrumentID, Price, pTrade->TradeTime, Volume, strTmp1);
+	}
+};
+
+void StrategyDeviate::OnRspOrderAction(CThostFtdcInputOrderActionField *pInputOrderAction, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) {
+}
+void StrategyDeviate::OnRspOrderInsert(CThostFtdcInputOrderField *pInputOrder, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) {
+}
+void StrategyDeviate::OnRtnOrder(CThostFtdcOrderField *pOrder) {
+
+}
+void StrategyDeviate::OnInit() {
+}

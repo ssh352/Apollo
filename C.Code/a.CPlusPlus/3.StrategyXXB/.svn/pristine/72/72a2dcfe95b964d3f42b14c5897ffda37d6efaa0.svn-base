@@ -1,0 +1,215 @@
+#pragma once
+#include <vector>
+#include "ThostFtdcUserApiStruct.h"
+#include<afxwin.h>
+using namespace std;
+
+// 组合管理 管理每个策略的 现金　手续费　冻结保证金　仓位　  可以用来管理策略的也可以用来管理账户的
+namespace Abstract {
+
+	class AbstractStrategy;
+}
+namespace CTP {
+	class CTraderSpi;
+}
+namespace Abstract {
+	 class BASELIB_API AbstractPortfolioManager
+	{
+	public:
+		AbstractPortfolioManager();
+		virtual ~AbstractPortfolioManager();
+		vector<CThostFtdcTradeField> tradedorderlist; //每成交一个单子就向这里添加一条
+		vector<CThostFtdcOrderField>  orderlist;    //挂单队列  
+		vector<CThostFtdcInputOrderField> orderinputlist;//挂单请求队列 单子插入成功后将在orderlist里增加一条并将orderinputlist里面orderinput 删除掉
+		vector<CThostFtdcInputOrderActionField> reqactionlist;//撤单请求队列
+		vector<CThostFtdcInvestorPositionField> inverstpositionlist;//持仓队列
+	    vector<CThostFtdcInvestorPositionDetailField> inverstpositiondetaillist;//持仓队列详细情
+		CThostFtdcTradingAccountField accountstatus;
+		
+	private:
+		friend class Abstract::AbstractStrategy; //友元
+		friend class CTP::CTraderSpi;
+		void OnRtnTrade(CThostFtdcTradeField *pTrade); //成交回报		
+		void OnRtnOrder(CThostFtdcOrderField *pOrder);
+		void OnRtnDepthMarketData(CThostFtdcDepthMarketDataField *pDepthMarketData); //行情接收函数
+		void OnRspOrderAction(CThostFtdcInputOrderActionField *pInputOrderAction, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast);
+		void OnRspOrderInsert(CThostFtdcInputOrderField *pInputOrder, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast);//
+		void OnRspQryInvestorPosition(CThostFtdcInvestorPositionField *pInvestorPosition, int nRequestID, bool bIsLast); //重建持仓队列
+		TThostFtdcDateType	TradingDay;
+		void OnRspQryOrder(CThostFtdcOrderField *pOrder, int nRequestID, bool bIsLast);
+		void OnRspQryTrade(CThostFtdcTradeField *pTrade, int nRequestID, bool bIsLast);
+		int lastpostionnRequestID;// 最近一次重建持仓队列的nrequestid
+		int lasttradenRequestID;  //最近一次重建持成交队列的nrequestid
+		int lastordernRequestID;  //最近一次查询重建挂单状态的nrequestid
+	protected:
+		int strategyid; //策略的id 
+		CRITICAL_SECTION cm;  //互斥量 这地方将来要改成标准c++ 的mux vs2015后 比CRITICAL_SECTION　效率更高
+		/*加载资产管理*/
+		void virtual LoadPortfolioManager()=0;//
+		/*存储一个交易*/
+		void virtual StoreTrade(int strategyid, CThostFtdcTradeField trade)=0;
+		/*删除一个交易*/
+		void virtual DeleteStoreTrade(int strategyid, CThostFtdcTradeField trade) = 0;
+		/*存储一个交易到ED表*/
+		void virtual StoreTradeED(int strategyid, CThostFtdcTradeField trade) = 0;
+
+		/**/
+		void virtual StoreInvestorPositionDetail(int strategyid, CThostFtdcInvestorPositionDetailField positiondetail)=0;
+		/*修改一个还没有平的持仓*/
+		void virtual UpdateStoreInvestorPositionDetail(int strategyid, CThostFtdcInvestorPositionDetailField positiondetail) = 0;
+		/*删除一个*/
+		void virtual DeleteStoreInvestorPositionDetail(int strategyid, CThostFtdcInvestorPositionDetailField positiondetail) = 0;
+
+		void virtual StoreInvestorPositionDetailED(int strategyid, CThostFtdcInvestorPositionDetailField positiondetail) = 0;
+
+	public:
+
+		virtual void setTradingDay(TThostFtdcDateType	TradingDay) final;
+		/*设置策略id*/
+		void SetStrategyID(int strategyid);
+		/*得到所有挂单的数量*/
+		int GetOrderCount(); //
+		/*根据instrumentid挂单的数量*/
+		int GetOrderCount(string instrumentid);  
+		/*根据instrumentid得到挂单的数量
+		  @instrumentid 
+		  @direction 多空方向
+		*/
+		int GetOrderCount(string instrumentid, TThostFtdcDirectionType direction); //
+		/*根据instrumentid 方向 开平 获得挂单的数量
+		@instrumentid
+		@direction 多空方向　
+		@offset 开平
+		*/
+		
+		int GetOrderCount(string instrumentid, TThostFtdcDirectionType direction,TThostFtdcOffsetFlagType offset); //
+
+		int GetOrderCount(string instrumentid, TThostFtdcDirectionType direction, TThostFtdcOffsetFlagType offset, double price);
+
+		int GetUnTradeOrderVolume(); //
+							 /*根据instrumentid挂单的数量*/
+		int GetUnTradeOrderVolume(string instrumentid);
+		/*根据instrumentid得到挂单的数量
+		@instrumentid
+		@direction 多空方向
+		*/
+		int GetUnTradeOrderVolume(string instrumentid, TThostFtdcDirectionType direction); //
+																				   /*根据instrumentid 方向 开平 获得挂单的数量
+																				   @instrumentid
+																				   @direction 多空方向　
+																				   @offset 开平
+																				   */
+
+		int GetUnTradeOrderVolume(string instrumentid, TThostFtdcDirectionType direction, TThostFtdcOffsetFlagType offset); //
+
+		int GetUnTradeOrderVolume(string instrumentid, TThostFtdcDirectionType direction, TThostFtdcOffsetFlagType offset, double price);
+
+		vector<CThostFtdcOrderField> GetOrder(string instrumentid, TThostFtdcDirectionType direction, TThostFtdcOffsetFlagType offset);
+		/*
+		将所有有效的挂单返回
+	
+		*/
+		vector<CThostFtdcOrderField> GetOrder();
+		/*根据OrderRef 获得挂单详情
+		@ref OrderRef
+		*/
+		vector<CThostFtdcOrderField> GetOrderFormStrategy(string ref);
+		
+
+		/*
+		单子是否已经全部成交
+		
+		*/
+		bool IsOrderTraded(string instrumentid, TThostFtdcDirectionType direction, TThostFtdcOffsetFlagType offset, string orderrefid, int frontid, int sessionid);
+
+		bool IsOrderCanceled(string instrumentid, string orderrefid, int frontid, int sessionid);
+	
+		double GetOrderAvgPrice(string instrumentid, TThostFtdcDirectionType direction, TThostFtdcOffsetFlagType offset);
+		/*
+		根据instrumentid 合方向获得仓位情况
+		@instrumentid
+		@direction 多空方向
+		*/
+		CThostFtdcInvestorPositionField GetPostion(string instrumentid,TThostFtdcDirectionType direction);
+		/*
+		根据instrumentid direction 获得仓位的详细情况
+		@instrumentid 合约id
+		@direction  多空方向
+		*/
+		vector<CThostFtdcInvestorPositionDetailField> GetPostionDetail(string instrumentid, TThostFtdcDirectionType direction);
+
+
+		/*
+		根据 direction 获得仓位的详细情况
+	
+		@direction  多空方向
+		*/
+		vector<CThostFtdcInvestorPositionDetailField> GetPostionDetail( TThostFtdcDirectionType direction);
+
+
+		/*
+		根据instrumentid direction 获得持仓的平均价格
+		@instrumentid 合约id
+		@direction 方向
+		*/
+		double GetPostionDetailAvgPrice(string instrumentid, TThostFtdcDirectionType direction);
+
+		/*
+		根据instrumentid direction 仓位数量
+		@instrumentid 合约id
+		@direction  多空方向
+		*/
+		int GetPostionDetailVolume(string instrumentid, TThostFtdcDirectionType direction);
+
+		/*
+		根据instrumentid direction tradingday是今天 仓位数量
+		@instrumentid 合约id
+		@direction  多空方向
+		*/
+		int GetPostionDetailVolumeToday(string instrumentid, TThostFtdcDirectionType direction,string today);
+
+		/*
+		根据instrumentid direction tradingday不是今天 仓位数量
+		@instrumentid 合约id
+		@direction  多空方向
+		*/
+		int GetPostionDetailVolumeYesterday(string instrumentid, TThostFtdcDirectionType direction,string today);
+
+		int GetPostionDetailVolume();
+
+	
+
+			/*
+		根据instrumentid direction 仓位数量
+		@instrumentid 合约id
+		@direction  多空方向
+		*/
+		int GetPostionDetailCount(string instrumentid, TThostFtdcDirectionType direction);
+
+
+		int GetPostionDetailCount();
+
+
+
+	
+		/*
+		获得挂单请求的数量 
+		*/
+		int GetOrderInputCount();
+		/*
+		根据获得挂单请求的数量
+		@instrumentid  合约id
+		@direction 方向
+		@offset  开平方向
+		*/
+		int  GetOrderInputCount(string instrumentid, TThostFtdcDirectionType direction, TThostFtdcOffsetFlagType offset);
+
+
+		int GetOrderInputCount(string instrumentid, TThostFtdcOffsetFlagType offset);
+		int GetOrderInputCount(string instrumentid);
+		/*获得撤单请求的数量
+		*/
+		int GetActionInputCount();
+	};
+
+}

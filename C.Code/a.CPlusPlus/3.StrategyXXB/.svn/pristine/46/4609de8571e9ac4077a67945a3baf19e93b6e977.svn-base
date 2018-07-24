@@ -1,0 +1,10 @@
+#pragma once
+#include "F:\StrategyXXB\trunk\BaseLib\Include\AbstractStrategy.h"
+class StrategyFICC :
+	public AbstractStrategy
+{
+public:
+	StrategyFICC();
+	~StrategyFICC();
+};
+

@@ -1,0 +1,10 @@
+﻿  TraderSpi.cpp
+  MdSpi.cpp
+  AutoTrade.cpp
+f:\cplusplus\thosttrader\thosttrader\autotrade.cpp(164): warning C4018: “<”: 有符号/无符号不匹配
+  正在生成代码...
+AutoTrade.obj : error LNK2019: 无法解析的外部符号 "public: static class CThostFtdcTraderApi * __cdecl CThostFtdcTraderApi::CreateFtdcTraderApi(char const *)" (?CreateFtdcTraderApi@CThostFtdcTraderApi@@SAPAV1@PBD@Z)，该符号在函数 _main 中被引用
+AutoTrade.obj : error LNK2019: 无法解析的外部符号 "public: static class CThostFtdcMdApi * __cdecl CThostFtdcMdApi::CreateFtdcMdApi(char const *,bool,bool)" (?CreateFtdcMdApi@CThostFtdcMdApi@@SAPAV1@PBD_N1@Z)，该符号在函数 _main 中被引用
+F:\CPlusPlus\ThostTrader\ctpapi64\thostmduserapi.lib : warning LNK4272: 库计算机类型“x64”与目标计算机类型“X86”冲突
+F:\CPlusPlus\ThostTrader\ctpapi64\thosttraderapi.lib : warning LNK4272: 库计算机类型“x64”与目标计算机类型“X86”冲突
+F:\CPlusPlus\CDemo\Debug\ThostTrader.exe : fatal error LNK1120: 2 个无法解析的外部命令

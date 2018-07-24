@@ -1,0 +1,346 @@
+#pragma once
+#include "stdafx.h"
+#include "StrategyMomentum.h"
+#include "ta_func.h"
+using namespace Abstract;
+StrategyMomentum::StrategyMomentum()
+{
+
+	this->HighTemp.state = FractalExtrePointStatus::UnStart;//还没有开始
+	this->HighTemp.type = FractalExtrePointType::Maximum; //极高值
+	this->LowTemp.state = FractalExtrePointStatus::UnStart;
+	this->LowTemp.type = FractalExtrePointType::Maximum; //极高值
+	this->dShapePara = 2; //默认为2 形态参数
+	//this->mtorderexcuter = new MTOrderExcuter();
+
+}
+
+
+StrategyMomentum::~StrategyMomentum()
+{
+	//delete this->mtorderexcuter;
+}
+
+void StrategyMomentum::OnRtnTrade(CThostFtdcTradeField *pTrade)
+{
+
+}
+
+void StrategyMomentum::OnRspOrderAction(CThostFtdcInputOrderActionField *pInputOrderAction, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
+{
+
+ }
+
+void   StrategyMomentum::SenderOder(CThostFtdcDepthMarketDataField *pDepthMarketData, OpenStrengthTypes openstrengthtype)
+{
+	switch (openstrengthtype) {
+	case OpenStrengthTypes::MKInfoSellStrong: //强烈卖
+	{
+		//this->mtorderexcuter->AddMTOrder();
+		MTOrder order;
+		memset(&order, 0, sizeof(MTOrder));
+		order.orderstatus = MTOrderStatus::UnOpen;
+	     CThostFtdcDepthMarketDataField tick= this->lasttickmap->getLastTick(pDepthMarketData->InstrumentID);
+		 order.openprice = tick.LastPrice;
+		 order.direct = MTOrderDirection::Short; //卖
+		 //分形最高点
+		// order.stoplossprice=this->instrumentmap   分形高点的值
+		// order.drawdown
+		//order.openprice
+		 this->mtorderexcuter->AddMTOrder(order);
+		 break;
+
+
+		
+	}
+	case OpenStrengthTypes::MKInfoSellMedium: //中卖
+	{
+
+
+		break;
+	}
+	case OpenStrengthTypes::MKInfoSellWeak://弱卖
+	{
+		break;
+	}
+
+	case OpenStrengthTypes::MKInfoBuyStrong://强买
+	{
+
+		break;
+	}
+
+	case OpenStrengthTypes::MKInfoBuyMedium://中买
+	{
+		break;
+	}
+
+	case OpenStrengthTypes::MKInfoBuyWeak: //弱买
+	{
+     
+		break;
+	}
+	
+
+
+
+	}
+
+}
+void StrategyMomentum::OnRtnDepthMarketDataV(CThostFtdcDepthMarketDataField *pDepthMarketData)
+{
+	//
+	//得到ema 60分钟的实时值  //得到力度值
+
+	//破结构 
+
+
+	OpenStrengthTypes openstrengthtype= this->GetOpenStrengthType(pDepthMarketData);
+	
+
+
+
+
+	
+
+	
+
+ }
+void  StrategyMomentum::OnRspOrderInsert(CThostFtdcInputOrderField *pInputOrder, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
+{
+
+ }
+void  StrategyMomentum::OnRtnOrder(CThostFtdcOrderField *pOrder)
+{
+
+ }
+void StrategyMomentum::OnInitV()
+{
+	//先取得历史数据
+	string endtime = this->timer->GetStrCurrentTime("%Y-%m-%d %H:%M:%S");
+	tm  endtimet = this->timer->GetTmCurrentTime();
+	tm   starttimet = endtimet;   //10天前 那么就是 60*60*24*10 
+	starttimet.tm_mday = endtimet.tm_mday - 10;
+	char str[80];
+	strftime(str, 100, "%Y-%m-%d %H:%M:%S", &starttimet);
+	shared_ptr<vector<TKDATA>> list_k = this->mddb->GetKdata("WIND", "rb1709", str, endtime, "1m");
+	this->kbarmap->MergerData(list_k, 1, true);
+	//TA_MA(1, 3, inreal, 2, TA_MAType_EMA, &outBeg, &outNbElement, &out[0]);
+	//TA_MACDEXT()
+
+ }
+
+void StrategyMomentum::OnBar(TKDATA kbar)
+{
+	//找金叉死叉
+	//关注30分钟周期 其它周期的bar 全部去除掉
+	if (kbar.periodtype == PeriodType::PERIOD_M30) { //来看看有没有金叉 死叉  //取三个30分钟该bar 前三个macd 值　看看有没有金叉　死叉　记录下来
+		
+		this->ForkGet(kbar);//得到金叉死叉
+		this->FracalExtrePointGet(kbar); //得到分形高点低点
+	}
+
+
+}
+
+OpenStrengthTypes StrategyMomentum::GetOpenStrengthType(CThostFtdcDepthMarketDataField *pDepthMarketData) {
+
+	double close_30m[70];
+	double ma_30m[70];
+	shared_ptr<double> d = this->kbarmap->GetBarFieldArray(30, 70, KBarField::CLOSE);
+	memcpy(close_30m, d.get(), sizeof(close_30m));
+	TA_MA(0, 70, close_30m, 60, TA_MAType::TA_MAType_EMA, 0, NULL, ma_30m);
+	double dMABig = ma_30m[69]; //大周期ma
+	TA_MA(0, 70, close_30m, 14, TA_MAType::TA_MAType_EMA, 0, NULL, ma_30m);
+	double dMASmall = ma_30m[69]; //小周期ma
+	TA_MA(0, 70, close_30m, 28, TA_MAType::TA_MAType_EMA, 0, NULL, ma_30m);
+	double dMAShort = ma_30m[69];//中周期ma
+								
+
+		//观察背离背离  //低背离的情况
+	//得到最后一个
+	//if((dMABig-this->lo))
+
+		
+		
+		
+		//产生信号
+								// 取最后一个高点
+	if (this->list_higpoint.size() > 0)  //如果没有k线
+	{
+		FractalExtrePoint highpoint = list_higpoint.at(list_higpoint.size() - 1);
+		double dPrice1 = highpoint.kEnter.high - highpoint.kEnter.low;
+		double dTmpHigh = highpoint.kStru.high > highpoint.kStart.high ? highpoint.kStru.high : highpoint.kStart.high;
+		double dTmpLow = highpoint.kStru.low < highpoint.kStart.low ? highpoint.kStru.low : highpoint.kStart.low;
+		double dPrice2 = dTmpHigh - dTmpLow;
+		if (dPrice1 > dShapePara*dPrice2) {
+
+			return OpenStrengthTypes::MKInfoNA;
+		}
+		if (pDepthMarketData->LastPrice < highpoint.kEnter.low + 1e-5 && (highpoint.kEnter.low - dMALong) < dThresld&&abs(pDepthMarketData->LastPrice-highpoint.kEnter.low)<m_iJumpThresld*pricetick&&((this->timer->GetTickCount()-highpoint.kEnter.time)/30*60<4))
+		{
+			//如果单前的价格小于确认时候的价格并且确认时的低点与大均线之间的距离小于阈值并且单前的价格与确认价格的低点小于阈值*最小跳 并且 单前时间与 最高点确认时间之间间隔的k线数少于4根
+			if (dMALong > dMAShort) {//如果长均线在短均线之上
+				return OpenStrengthTypes::MKInfoSellStrong;//强烈开空
+			}
+			else { //反之
+				return OpenStrengthTypes::MKInfoSellWeak; //强烈开空
+			}
+		}
+
+	}
+	else
+	{
+		return OpenStrengthTypes::MKInfoNA;
+	}
+
+
+
+}
+void StrategyMomentum::FracalExtrePointGet(TKDATA& kbar)
+{
+
+	switch (this->HighTemp.state) {
+	case FractalExtrePointStatus::UnStart:
+	{
+		HighTemp.kEnter = kbar;
+		this->HighTemp.state = FractalExtrePointStatus::Start;
+	}
+	case FractalExtrePointStatus::Start:
+	{ //如果已经开始 那么单前的ｋ线　比kener 高点是否高
+		if (kbar.high > this->HighTemp.kEnter.high)  //成立
+		{
+			HighTemp.kStru = kbar;
+			this->HighTemp.state = FractalExtrePointStatus::Stru;
+		}
+		else {
+			this->HighTemp.kStart = kbar;
+		}
+
+	}
+	case FractalExtrePointStatus::Stru:
+	{
+		if (kbar.low < this->HighTemp.kStru.low) {  //确立
+			this->HighTemp.state = FractalExtrePointStatus::Enter;
+			this->HighTemp.kEnter = kbar;
+			list_higpoint.push_back(this->HighTemp);
+#ifdef DEBUG
+			this->logger->Log("产生分型高点");
+#endif
+			this->HighTemp.kStart = kbar;
+			this->HighTemp.state = FractalExtrePointStatus::Start;
+		}
+
+		if (kbar.low + 1e-5 > this->HighTemp.kStru.low && kbar.low < this->HighTemp.kStru.high + 1e-5)
+		{
+			//更新暂存的数据
+			this->HighTemp.kStru.low = kbar.low;
+		}
+
+
+	}
+
+	default:      //啥都不干
+		;
+
+	}
+
+
+	//----------------------------
+	switch (this->LowTemp.state) {
+	case FractalExtrePointStatus::UnStart:
+	{
+		LowTemp.kEnter = kbar;
+		this->LowTemp.state = FractalExtrePointStatus::Start;
+	}
+	case FractalExtrePointStatus::Start:
+	{ //如果已经开始 那么单前的ｋ线　比kener 高点是否高
+		if (kbar.low < this->LowTemp.kEnter.low)  //成立
+		{
+			LowTemp.kStru = kbar;
+			this->LowTemp.state = FractalExtrePointStatus::Stru;
+		}
+		else {
+			this->LowTemp.kStart = kbar;
+		}
+
+	}
+	case FractalExtrePointStatus::Stru:
+	{
+		if (kbar.high > this->LowTemp.kStru.high) {  //确立
+			this->LowTemp.state = FractalExtrePointStatus::Enter;
+			this->LowTemp.kEnter = kbar;
+			list_lowpoint.push_back(this->LowTemp);
+#ifdef DEBUG
+			this->logger->Log("产生分型低点");
+#endif
+			this->LowTemp.kStart = kbar;
+			this->LowTemp.state = FractalExtrePointStatus::Start;
+		}
+
+		if (kbar.high - 1e-5 < this->LowTemp.kStru.high && kbar.high > this->LowTemp.kStru.low - 1e-5)
+		{
+			//更新暂存的数据
+			this->LowTemp.kStru.high = kbar.high;
+		}
+
+
+	}
+	default:      //啥都不干
+		;
+
+	}
+
+}
+void StrategyMomentum::ForkGet(TKDATA& kbar) {
+
+	shared_ptr<double> close100 = this->kbarmap->GetBarFieldArray(30, 40, KBarField::CLOSE);
+	double closein[40];
+	double macd[40];
+	double macdhis[40];
+	double macdsigh[40];
+	memcpy(closein, close100.get(), sizeof(double));
+	TA_MACD(0, 0, closein, 12, 26, 9, NULL, NULL, macd, macdsigh, macdhis);
+	//这里面macd 是慢　macdsigh是快线
+	if (macd[38] > macdsigh[38] && macd[39] < macdsigh[39])   //慢线从高到低被快线超越  金叉记录下来
+	{
+		Fork fork;
+		memset(&fork, 0, sizeof(Fork));
+		fork.time = kbar.time;
+		fork.dValue = (macd[38] + macd[39]) / 2.00;
+		fork.type = ForkType::gold;//金叉
+		this->list_fork.push_back(fork);
+	}
+	else if (macd[38] < macdsigh[38] && macd[39] > macdsigh[39]) //慢线超越快线   死叉记录下来。
+	{
+		Fork fork;
+		memset(&fork, 0, sizeof(Fork));
+		fork.time = kbar.time;
+		fork.dValue = (macd[38] + macd[39]) / 2.00;
+		fork.type = ForkType::dead;//金叉
+		this->list_fork.push_back(fork);
+	}
+
+}
+
+void StrategyMomentum::OnTime(tm t)
+{
+	//来找金叉死叉
+   //deque<TKDATA> k=	kbargen->GetBarList(this->m_iPeriod);
+   
+   
+
+
+
+
+ }
+void StrategyMomentum::SetParameter(map<string, double> param)
+{
+
+ }
+map<string, pair<double, double>> StrategyMomentum::GetParameterArea()
+{
+	map<string, pair<double, double>> map1;
+	return map1;
+
+ }

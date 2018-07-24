@@ -1,0 +1,5 @@
+{"mddbaddr":"localhost",
+"mddbport":8090,
+"tickdb":"futures",
+"bardb":"bars"
+}

@@ -1,0 +1,12 @@
+#include "stdafx.h"
+#include "StrategyFICC.h"
+
+
+StrategyFICC::StrategyFICC()
+{
+}
+
+
+StrategyFICC::~StrategyFICC()
+{
+}

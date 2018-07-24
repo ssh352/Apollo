@@ -1,0 +1,23 @@
+#pragma once
+#include "AbstractStrategy.h"
+
+using namespace Abstract;
+
+class StrategyFICC:public AbstractStrategy
+{
+public:
+	StrategyFICC();
+	virtual ~StrategyFICC();
+
+protected:
+	virtual void OnRtnTrade(CThostFtdcTradeField *pTrade);
+	virtual void OnRspOrderAction(CThostFtdcInputOrderActionField *pInputOrderAction, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast);
+	virtual void OnRtnDepthMarketData(CThostFtdcDepthMarketDataField *pDepthMarketData); 
+	virtual void OnRspOrderInsert(CThostFtdcInputOrderField *pInputOrder, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast);
+	virtual void OnRtnOrder(CThostFtdcOrderField *pOrder);
+	virtual void OnInit();
+	virtual void OnTime(tm t);
+
+private:
+	bool flag;
+};

@@ -1,0 +1,150 @@
+#pragma once
+#include <vector>
+#include <memory>
+#include "ThostFtdcTraderApi.h"
+#include "AbstractInstrumentMap.h"
+using namespace std;
+using namespace Abstract;
+namespace Abstract {
+	/* 策略评价类 
+	   提供策略的评价方法
+	*/
+	class BASELIB_API StrategyAssessment {
+	private:
+			vector<CThostFtdcTradeField> list_trade;
+			shared_ptr<AbstactInstrumentMap> instrumentmap;
+			double InitalMoney;
+			int TradeDays;
+	public:
+		void SetTradeList(vector<CThostFtdcTradeField> list_trade);
+		void SetInstrumentMap(shared_ptr<AbstactInstrumentMap> instrumentmap);
+		void SetBase();//设置基准
+
+	public:
+		///总收益类指标
+		/*总盈利	*/
+		double GetTotalProfit();
+		/*总亏损*/
+		double GetTotalLoss();
+		/*净利润*/
+		double GetNetProfit();
+		/*	盈亏比		*/
+		double GetWLRatio();
+		///交易次数类指标
+		/*总交易次数*/
+		int GetTotalTradeTime();
+		/*空仓的次数*/
+		int GetEmptyTime();
+		/*盈利次数*/
+		int GetWinTime();
+		/*亏损次数*/
+		int GetLossTime();
+		/*持平次数*/
+		int GetEvenTime();
+		/*胜率*/
+		double GetWinPer();
+		/*赔率*/
+		double GetLossPer();
+		/*最大盈利次数*/
+		double GetMaxConWinTime();
+		/*最大连亏次数*/
+		double GetMaxConLossTime();
+		///平均收益类指标
+		//平均净利润
+		double GetAvrNetProfit();
+		//平均盈利
+		double GetAvrProfit();
+		//平均亏损
+		double GetAvrLoss();
+		//平均盈亏比
+		double GetAvrWLRation();
+		//平均持仓周期  返回时间秒
+		int GetAvrHoldingCycle();
+		//平均空仓周期 返回时间秒
+		int GetAvrEmptyCycle();
+		//盈利天数
+		int GetWinDays();
+		//亏损天数
+		int GetLossDays();
+		//平均盈利周期 返回时间为秒
+		int GetAvrWinCycle();
+		//平均亏损周期
+		int GetAvrLossCycle();
+		//平均持平周期
+		int GetEventCycle();
+		///极端交易类指标
+
+		//最大单次盈利
+		double GetMaxOnceProfit();
+		//最大单次亏损
+		double GetMaxOnceLoss();
+		//最大连续盈利
+		double GetMaxConProfit();
+		//最大连续亏损
+		double GetMaxConLoss();
+		//最大浮赢
+		double GetMaxOpenProfit();
+		//最大浮亏
+		double GetMaxOpenLoss();
+
+
+		//资产回测指标类
+
+		//回撤次数
+		double GetDrawdownTime();
+		//平均回撤
+		double GetAvrDrawdown();
+		//最大回撤
+		double GetMaxDrawdown();
+		//最大回撤率
+		double GetMaxDrawdownRatio();
+		//最大回撤日期
+		string GetMaxDrwadownDate();
+		//回撤安全系数
+		double GetDrawdownSafety();
+
+
+		///收益率类指标
+		//实际收益率
+		double GetActualYield();
+		//平均每日收益率
+		double GetAvrDayYield();
+		//年化收益率
+		double GetYearYield();
+
+		///风险类指标
+		//波动率
+		double GetVolatility();
+		//贝塔值
+		double GetBeta();
+		//跟踪误差
+		double GetTrackingError();
+		//在险价值
+		double GetVar();
+
+		///收益/风险类指标
+		//夏普率
+		double GetSharpeRatio();
+		//特雷纳比率
+		double GetTR();
+		//詹森阿尔法
+		double GetAlpha();
+		//信息比率
+		double GetIR();
+		//Sortino Ratio
+		double GetSortinoRatio();
+		//Carmar率（年化收益率 / 最大回撤）
+		double GetCalmarRatio();
+
+
+
+
+
+
+
+
+
+      };
+
+
+}

@@ -1,0 +1,21 @@
+#pragma once
+#include "BaseLib.h"
+#include <string>
+#include <map>
+#include "ThostFtdcUserApiStruct.h"
+using namespace std;
+//这个类是用来记录最近一跳的
+namespace Abstract {
+	class BASELIB_API LastTickMap {
+	public:
+		void OnRtnDepthMarketData(CThostFtdcDepthMarketDataField ticket);
+		CThostFtdcDepthMarketDataField getLastTick(string instrumentid);
+		LastTickMap();
+	private:
+		map<string, CThostFtdcDepthMarketDataField> instrumentpricemap;
+
+ };
+
+
+
+}

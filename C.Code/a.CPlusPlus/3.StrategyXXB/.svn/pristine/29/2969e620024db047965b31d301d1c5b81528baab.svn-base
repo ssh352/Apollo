@@ -1,0 +1,138 @@
+#include "stdafx.h"
+#include "StrategyFICC.h"
+#include <iostream>  
+#include <math.h>
+#include <string> 
+#include <time.h>
+#include <vector>  
+#include <fstream>  
+#include <sstream>  
+
+using namespace std;
+using namespace Abstract;
+
+StrategyFICC::StrategyFICC()
+{
+	this->flag = false;
+}
+
+
+StrategyFICC::~StrategyFICC()
+{
+}
+
+void StrategyFICC::OnRtnTrade(CThostFtdcTradeField *pTrade)
+{
+
+}
+void StrategyFICC::OnRspOrderAction(CThostFtdcInputOrderActionField *pInputOrderAction, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
+{
+
+}
+void StrategyFICC::OnRtnDepthMarketData(CThostFtdcDepthMarketDataField *pDepthMarketData)
+{
+
+}
+void  StrategyFICC::OnRspOrderInsert(CThostFtdcInputOrderField *pInputOrder, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
+{
+
+}
+void  StrategyFICC::OnRtnOrder(CThostFtdcOrderField *pOrder)
+{
+
+}
+void StrategyFICC::OnInit()
+{
+
+}
+void StrategyFICC::OnTime(tm t)
+{
+
+
+}
+
+/****************************************************************
+Date: 2017-11-06
+Author: xia xianba
+Copyright: HeXin Invest Inc.
+Description: 
+  - Input: The CSV file containing transaction information
+  - Output: A vector contains csv file after parsing
+****************************************************************/
+vector<string> GetLongList(string files)
+{
+	string str;
+	string lineStr;
+	stringstream ss;
+
+	vector<string> lineArray;
+	ifstream inFile(files, ios::in);
+
+	while (getline(inFile, lineStr))
+	{
+		ss.str(lineStr);
+	}
+
+	while (getline(ss, str, ','))
+		lineArray.push_back(str);
+
+	return lineArray;
+}
+
+/****************************************************************
+Date: 2017-11-06
+Author: xia xianba
+Copyright: HeXin Invest Inc.
+Description:
+- Input: Current date
+- Output: If trading today,ture or false
+****************************************************************/
+bool DoTrade(string date_now)
+{
+	time_t tm_list;
+	time_t tm_now;
+	string lastdate;
+	string longfile = "long.csv";
+	vector<string> longlist;
+
+	longlist = GetLongList(longfile);
+	lastdate = longlist[0];
+
+	tm_list = StringToDatetime(longlist[0]);
+	tm_now = StringToDatetime(date_now);
+
+
+	double ms = difftime(tm_now, tm_list);
+
+	double days = ceil(ms / 86400);
+
+	if (days >= 5)
+		return true;
+	else
+		return false;
+}
+
+/****************************************************************
+Date: 2017-11-06
+Author: xia xianba
+Copyright: HeXin Invest Inc.
+Description:
+- Input: The string format of the date
+- Output: timestamp in linux format
+****************************************************************/
+time_t StringToDatetime(string str)
+{
+	char *cha = (char*)str.data();
+	tm tm_;
+	int year, month, day, hour = 0, minute = 0, second = 0;
+	sscanf(cha, "%d/%d/%d ", &year, &month, &day);
+	tm_.tm_year = year - 1900;
+	tm_.tm_mon = month - 1;
+	tm_.tm_mday = day;
+	tm_.tm_hour = hour;
+	tm_.tm_min = minute;
+	tm_.tm_sec = second;
+	tm_.tm_isdst = 0;
+	time_t t_ = mktime(&tm_);
+	return t_;
+}

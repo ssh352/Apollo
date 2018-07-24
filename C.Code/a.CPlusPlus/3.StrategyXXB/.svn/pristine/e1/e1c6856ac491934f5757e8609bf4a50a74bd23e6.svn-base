@@ -1,0 +1,11 @@
+#pragma once
+#include "AbstractStrategy.h"
+using namespace Abstract;
+class StrategyFICC :
+	public AbstractStrategy
+{
+public:
+	StrategyFICC();
+	~StrategyFICC();
+};
+

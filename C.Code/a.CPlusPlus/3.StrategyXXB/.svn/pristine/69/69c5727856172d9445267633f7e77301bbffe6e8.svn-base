@@ -1,0 +1,123 @@
+#pragma once
+#include "AbstractStrategy.h"
+#include "KBarGenerater.h"
+#include "AbstractStoreObject.h"
+#include "AbstractBarStrategy.h"
+using namespace Abstract;
+enum FractalExtrePointStatus { //分形点的状态
+	UnStart = 0,
+	Start = 1, //开始
+	Stru = 2,   //成立
+	Enter = 3   //确立
+};
+enum FractalExtrePointType {
+	Maximum = 0, //极大值
+	Minimum = 1  //极小值
+};
+typedef struct FractalExtrePoint   //分型极值点
+{
+	TKDATA kStart; //开始
+	TKDATA kStru;  //成立
+	TKDATA kEnter; //确认
+	FractalExtrePointStatus state; //分形极值点的状态
+	FractalExtrePointType type; //分形极值类型
+} STRUCTPOINT, *PSTRUCTPOINT;
+
+
+enum ForkType
+{
+	gold=0, //金叉
+    dead=1   //死叉
+};
+
+typedef struct Fork
+{
+	time_t time; //产生金叉时候后一个bar 时间坐标
+	double dValue;//这是一个产生金叉位置的估算值 取前后两个产生叉的macd 中间值
+	ForkType type;
+} FORK, *PFORK;
+
+enum OpenStrengthTypes {  //买卖力度类型
+	MKInfoNA = 0,        //不操作
+	MKInfoBuyStrong = 3,//强烈买
+	MKInfoBuyMedium = 2, //中买
+	MKInfoBuyWeak = 1,   //弱买
+	MKInfoSellStrong = -3, //强烈卖
+	MKInfoSellMedium = -2,  
+	MKInfoSellWeak = -1,
+	MKInfoWatch = 10,
+	MKInfoBuy = 11,
+	MKInfoSell = 12,
+};
+
+enum OpenPeriodTypes {  //开单周期类型
+	OpenShortPeriod = 0,   //依据短周期开仓；
+	OpenMediumPeriod = 1,
+	OpenLongPeriod = 2,
+	OpenLongLongPeriod = 3,
+};
+
+class StrategyMomentum:public AbstractBarStrategy
+{
+
+public:
+	StrategyMomentum();
+	virtual ~StrategyMomentum();
+protected:
+	virtual void OnRtnTrade(CThostFtdcTradeField *pTrade); //成交回报		
+	virtual void OnRspOrderAction(CThostFtdcInputOrderActionField *pInputOrderAction, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast);
+	virtual void OnRtnDepthMarketDataV(CThostFtdcDepthMarketDataField *pDepthMarketData); //行情接收函数
+	void SenderOder(CThostFtdcDepthMarketDataField *pDepthMarketData, OpenStrengthTypes openstrengthtype);
+	virtual void  OnRspOrderInsert(CThostFtdcInputOrderField *pInputOrder, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast);
+	virtual void  OnRtnOrder(CThostFtdcOrderField *pOrder);
+	virtual void OnInitV();
+	virtual void OnBar(TKDATA k);
+	virtual void OnTime(tm t);
+	virtual void SetParameter(map<string, double> param);//设置参数
+	virtual map<string, pair<double, double>> GetParameterArea();//返回参数调优空间	 
+	void  ForkGet(TKDATA& k);
+	void  FracalExtrePointGet(TKDATA& k);
+	OpenStrengthTypes GetOpenStrengthType(CThostFtdcDepthMarketDataField *pDepthMarketData); //获得买卖强度类型
+	tm t; //最近开仓的分钟数
+	
+	
+private:
+	vector<Fork> list_fork;//用来存放金叉死叉
+	FractalExtrePoint HighTemp;//分形极点高点
+	FractalExtrePoint LowTemp;//分形低点
+	vector<FractalExtrePoint> list_higpoint;//存储起来
+	vector<FractalExtrePoint> list_lowpoint;//存储起来
+	//MTOrderExcuter * mtorder;
+	//FractalExtrePoint Highpoint;
+	//FractalExtrePoint LowTemp;
+	double dThresld;//
+	double dGlueThresld;                    //粘合程度；
+	int iBigLongPeriod;                //大周期均线；
+	int m_iPeriod;                             //K线显示周期均线；
+	double dStrongWinLossRatio;   //强
+	double dMediumWinLossRatio ;                                      //中
+	double dWeakWinLossRatio;               //弱
+	double dVolatility ;                   //波动率阈值；                        
+	double dShape1 ;                           //形态判定阈值；
+	//double dPrice1T;                         //最小跳；
+	double dFeeRatio;                       //手续费；
+	double m_dBailingRatio;                  //保证金比例
+	double dWinLossMax ;                   //最大止盈止损；
+	double dWinLossMin ;                   //最小止盈止损；
+	int iBiasPeriod ;                      //乖离周期；
+	double pricetick;//最小跳
+	double dBiasThresld ;              //乖离标准差倍数阈值；
+	double m_iJumpThresld ;         //跳空N跳以内开仓，否则不开；
+	double m_dGlueThresld ;
+	int iMACDJudgePeriod ;
+	int iLots ;
+	double d1TProfit;                        //1跳为盈利；
+	int iTestPeriod1;                         //临时变量  
+	int	iTestPeriod2;                         //临时变量
+	int	iTestPeriod3;                        //临时变量
+	int	iTestPeriod4;                        //临时变量
+	int	iTestPeriod5;                        //临时变量
+	double dShapePara;                     //极点形态参数 用以判断是否是畸形的分形极点
+
+
+};

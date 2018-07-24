@@ -1,0 +1,269 @@
+#include "stdafx.h"
+#include "StrategyCat.h"
+#include "LOGGER.h"
+#include "ta_func.h"
+#include "time.h"
+//#include "Tyloodbapiclientlib.h"
+using namespace CTPTOOL;
+
+
+StrategyCat::StrategyCat()
+{
+	this->strategyid = 1002;
+	this->strategyname = "cat";
+	this->symbol = "cs1801";
+	this->subscribelist.push_back(this->symbol);
+	this->paralist.push_back("计算排队队列的位置下单");
+	this->postion = 10000;   
+	this->kbargen = new KBarGenerater1();
+	this->kbargen->OnInit(this->symbol);
+}
+void StrategyCat::OnBar(TKDATA kdata)
+{
+	//
+	
+
+
+
+}
+void StrategyCat::OnInit() {
+
+	this->kbargen->OnInit(this->symbol);
+	string  endtime = this->timer->GetStrCurrentTime("%Y-%m-%d %H:%M:%S");
+	time_t  endtimet = this->timer->GetTCurrentTime();
+	time_t   starttimet = endtimet - 60 * 60 * 24 * 20;   //10天前 那么就是 60*60*24*10
+	tm *local = localtime(&starttimet);
+	char str[80];
+	strftime(str, 80, "%Y-%m-%d %H:%M:%S", local);
+	shared_ptr<vector<TKDATA>> list_k = this->mddb->GetKdata("WIND", this->symbol, str, endtime, "5m");
+	this->kbargen->MergerData(list_k, PeriodType::PERIOD_M5, true); //将30分钟的k线融入到k线生成器。
+	//->mddb->GetKdata("WIND",)
+	this->kbargen->pf_onbar= std::bind(&StrategyCat::OnBar, this, std::placeholders::_1);
+}
+void StrategyCat::OnTime(tm t) {
+
+	//LOGGER::CTP_Log("ontime %d%d ",t.tm_min,t.tm_sec);
+}
+StrategyCat::~StrategyCat()
+{
+
+	delete kbargen;
+
+}
+void StrategyCat::OnRtnTrade(CThostFtdcTradeField *pTrade) {
+
+
+	if (pTrade->OffsetFlag== THOST_FTDC_OFEN_Open) {  //如果没有下单请求，没有挂单 并且刚成交的单子是开单
+		CThostFtdcInputOrderField inputOrderField;
+		(void)memset(&inputOrderField, 0, sizeof(inputOrderField));
+		strcpy(inputOrderField.BrokerID, this->brokerid.c_str());
+		strcpy(inputOrderField.InvestorID, this->investid.c_str());
+		strcpy(inputOrderField.InstrumentID, pTrade->InstrumentID);
+		sprintf(inputOrderField.OrderRef, "%s", this->GetNewOrderRef().c_str());
+		CString instrumentid;
+		instrumentid.Format("%s", pTrade->InstrumentID);
+		double pricetick =this->instrumentmap->getInstrumentid(instrumentid.GetBuffer(0)).PriceTick;
+		///报单价格条件
+		inputOrderField.OrderPriceType = THOST_FTDC_OPT_LimitPrice;
+		///买卖方向
+		inputOrderField.Direction = THOST_FTDC_D_Sell;
+		///组合开平标志
+		inputOrderField.CombOffsetFlag[0] = THOST_FTDC_OFEN_Close;
+		///组合投机套保标志
+		inputOrderField.CombHedgeFlag[0] = THOST_FTDC_HFEN_Speculation;
+		inputOrderField.LimitPrice = pTrade->Price - 1.00*pricetick;//挂一跳止盈
+		inputOrderField.VolumeTotalOriginal = 1;
+		///有效期类型: 当日有效
+		inputOrderField.TimeCondition = THOST_FTDC_TC_IOC;
+		///成交量类型: 任何数量
+		inputOrderField.VolumeCondition = THOST_FTDC_VC_AV;
+		///最小成交量: 1
+		inputOrderField.MinVolume = 1;
+		///触发条件: 立即
+		inputOrderField.ContingentCondition = THOST_FTDC_CC_Immediately;
+		///止损价
+		///inputOrderField    StopPrice;
+		///强平原因: 非强平
+		inputOrderField.ForceCloseReason = THOST_FTDC_FCC_NotForceClose;
+		///自动挂起标志: 否
+		inputOrderField.IsAutoSuspend = 0;
+		///用户强评标志: 否
+		inputOrderField.UserForceClose = 0;
+
+		int i = this->tdapi->ReqOrderInsert(&inputOrderField, this->requestid++);
+		
+
+	}
+	
+
+
+}
+void StrategyCat::OnRspOrderAction(CThostFtdcInputOrderActionField *pInputOrderAction, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) {
+
+	LOGGER::CTP_Log("撤单失败 ");
+ }
+void StrategyCat::OnRtnDepthMarketData(CThostFtdcDepthMarketDataField *pDepthMarketData) {
+	kbargen->OnRtnDepthMarketData(pDepthMarketData);
+	deque<TKDATA> deque_list=this->kbargen->GetBarList(PeriodType::PERIOD_M5,200);
+	double a[200];
+	memset(a, 0, sizeof(a));
+
+	for (int i = 0; i < 200; i++) {
+
+	}
+
+
+
+	TA_Integer outBeg;
+	TA_Integer outNbElement;
+	string actionday = pDepthMarketData->ActionDay;
+	string updatetime = pDepthMarketData->UpdateTime;
+	string time_string = actionday +" " + updatetime;
+	//LOG("%s",time_string.c_str());
+	struct tm tm1;
+	time_t time1;
+	int i = sscanf(time_string.c_str(), "%04d%02d%02d %02d:%02d:%02d",
+		&(tm1.tm_year),
+		&(tm1.tm_mon),
+		&(tm1.tm_mday),
+		&(tm1.tm_hour),
+		&(tm1.tm_min),
+		&(tm1.tm_sec));
+	tm1.tm_year = tm1.tm_year - 1900;
+	time1 = mktime(&tm1);
+
+//	LOGGER::CTP_Log("cat 未成交的挂单 %d", this->portfoliomanager->GetOrderCount());
+//	LOGGER::CTP_Log("cat 未成交的开仓挂单 %s %d",pDepthMarketData->InstrumentID, this->portfoliomanager->GetOrderCount(pDepthMarketData->InstrumentID), THOST_FTDC_D_Buy, THOST_FTDC_OF_Open);
+
+	//如果是多单 如果开仓价格 比现在的价格相差10跳 撤单
+	
+
+	if (this->portfoliomanager->GetOrderCount(pDepthMarketData->InstrumentID, THOST_FTDC_D_Buy, THOST_FTDC_OF_Open) > 0) {
+     //撤单		
+		vector<CThostFtdcOrderField> list = this->portfoliomanager->GetOrder(pDepthMarketData->InstrumentID, THOST_FTDC_D_Buy, THOST_FTDC_OF_Open);
+		for (int i = 0; i < list.size(); i++) {
+			double pricetick = this->instrumentmap->getInstrumentid(list[i].InstrumentID).PriceTick;
+			if ((list[i].LimitPrice < pDepthMarketData->BidPrice1 - 5.00*pricetick)|| (list[i].LimitPrice == pDepthMarketData->BidPrice1&&(pDepthMarketData->BidVolume1<4 * pDepthMarketData->AskVolume1||pDepthMarketData->BidVolume1<300))){//如果挂挡的价格小于bidprice 10跳 那么撤销这个挂单
+				CThostFtdcInputOrderActionField inputOrderActionField;
+				(void)memset(&inputOrderActionField, 0, sizeof(inputOrderActionField));
+				strcpy(inputOrderActionField.BrokerID, this->brokerid.c_str());
+				strcpy(inputOrderActionField.InvestorID, this->investid.c_str());
+				strcpy(inputOrderActionField.OrderRef, list[i].OrderRef);
+				inputOrderActionField.FrontID = list[i].FrontID;
+				inputOrderActionField.SessionID = list[i].SessionID;
+				//inputOrderActionField.OrderActionRef=0;
+				inputOrderActionField.ActionFlag = THOST_FTDC_AF_Delete;
+				strcpy(inputOrderActionField.InstrumentID, list[i].InstrumentID);
+				int i = this->tdapi->ReqOrderAction(&inputOrderActionField, this->requestid++);
+				if(list[i].LimitPrice < pDepthMarketData->BidPrice1 - 4.00*pricetick)
+				LOGGER::CTP_Log("价格偏离过大 撤销开仓挂单");
+				else
+				LOGGER::CTP_Log("不存在挂单优势撤单");				
+			}
+	      
+		} 
+	}
+
+
+	if (this->portfoliomanager->GetOrderCount()==0&&this->portfoliomanager->GetPostionDetailCount()==0&& this->portfoliomanager->GetOrderInputCount()==0) { //修改成 如果下单队列没有size 等待成交的队列也没有
+		LOGGER::CTP_Log("开始下单");
+		//if (pDepthMarketData->SettlementPrice <= pDepthMarketData->BidPrice1)
+		//{
+
+
+			//return;
+		//}
+			
+		CThostFtdcInputOrderField inputOrderField;
+		(void)memset(&inputOrderField, 0, sizeof(inputOrderField));
+		strcpy(inputOrderField.BrokerID, this->brokerid.c_str());
+		strcpy(inputOrderField.InvestorID, this->investid.c_str());
+		strcpy(inputOrderField.InstrumentID, pDepthMarketData->InstrumentID);
+		double pricetick = this->instrumentmap->getInstrumentid(pDepthMarketData->InstrumentID).PriceTick;
+		sprintf(inputOrderField.OrderRef, "%s", this->GetNewOrderRef().c_str());
+		///报单价格条件
+		inputOrderField.OrderPriceType = THOST_FTDC_OPT_LimitPrice;
+		///买卖方向
+		inputOrderField.Direction = THOST_FTDC_D_Buy;
+		///组合开平标志
+		inputOrderField.CombOffsetFlag[0] = THOST_FTDC_OFEN_Open;
+		///组合投机套保标志
+		inputOrderField.CombHedgeFlag[0] = THOST_FTDC_HFEN_Speculation;
+		inputOrderField.LimitPrice = pDepthMarketData->AskPrice1+5.0*pricetick; //挂在偏离5跳处等待
+		inputOrderField.VolumeTotalOriginal = 1;
+		///有效期类型: 当日有效
+		inputOrderField.TimeCondition = THOST_FTDC_TC_GFD;
+		///成交量类型: 任何数量
+		inputOrderField.VolumeCondition = THOST_FTDC_VC_AV;
+		///最小成交量: 1
+		inputOrderField.MinVolume = 1;
+		///触发条件: 立即
+		inputOrderField.ContingentCondition = THOST_FTDC_CC_Immediately;
+		///止损价
+		///inputOrderField    StopPrice;
+		///强平原因: 非强平
+		inputOrderField.ForceCloseReason = THOST_FTDC_FCC_NotForceClose;
+		///自动挂起标志: 否
+		inputOrderField.IsAutoSuspend = 0;
+		///用户强评标志: 否
+		inputOrderField.UserForceClose = 0;
+		int i = this->tdapi->ReqOrderInsert(&inputOrderField, this->requestid++);
+		LOGGER::CTP_Log("下单返回%d",i);
+
+	}
+
+	if (this->portfoliomanager->GetOrderCount() == 0 && this->portfoliomanager->GetPostionDetailCount() >0 && this->portfoliomanager->GetOrderInputCount() == 0) { //修改成 如果下单队列没有size 等待成交的队列也没有
+		LOGGER::CTP_Log("开始下单");
+		//if (pDepthMarketData->SettlementPrice <= pDepthMarketData->BidPrice1)
+		//{
+
+
+		//return;
+		//}
+
+		CThostFtdcInputOrderField inputOrderField;
+		(void)memset(&inputOrderField, 0, sizeof(inputOrderField));
+		strcpy(inputOrderField.BrokerID, this->brokerid.c_str());
+		strcpy(inputOrderField.InvestorID, this->investid.c_str());
+		strcpy(inputOrderField.InstrumentID, pDepthMarketData->InstrumentID);
+		double pricetick = this->instrumentmap->getInstrumentid(pDepthMarketData->InstrumentID).PriceTick;
+		sprintf(inputOrderField.OrderRef, "%s", this->GetNewOrderRef().c_str());
+		///报单价格条件
+		inputOrderField.OrderPriceType = THOST_FTDC_OPT_LimitPrice;
+		///买卖方向
+		inputOrderField.Direction = THOST_FTDC_D_Sell;
+		///组合开平标志
+		inputOrderField.CombOffsetFlag[0] = THOST_FTDC_OFEN_Close;
+		///组合投机套保标志
+		inputOrderField.CombHedgeFlag[0] = THOST_FTDC_HFEN_Speculation;
+		inputOrderField.LimitPrice = pDepthMarketData->BidPrice1 - 1.0*pricetick;
+		inputOrderField.VolumeTotalOriginal = 1;
+		///有效期类型: 当日有效
+		inputOrderField.TimeCondition = THOST_FTDC_TC_GFD;
+		///成交量类型: 任何数量
+		inputOrderField.VolumeCondition = THOST_FTDC_VC_AV;
+		///最小成交量: 1
+		inputOrderField.MinVolume = 1;
+		///触发条件: 立即
+		inputOrderField.ContingentCondition = THOST_FTDC_CC_Immediately;
+		///止损价
+		///inputOrderField    StopPrice;
+		///强平原因: 非强平
+		inputOrderField.ForceCloseReason = THOST_FTDC_FCC_NotForceClose;
+		///自动挂起标志: 否
+		inputOrderField.IsAutoSuspend = 0;
+		///用户强评标志: 否
+		inputOrderField.UserForceClose = 0;
+		int i = this->tdapi->ReqOrderInsert(&inputOrderField, this->requestid++);
+		LOGGER::CTP_Log("下单返回%d", i);
+
+	}
+
+
+}
+void  StrategyCat::OnRspOrderInsert(CThostFtdcInputOrderField *pInputOrder, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) {
+	LOGGER::CTP_Log("下单失败 %s",pRspInfo->ErrorMsg);
+ }
+void  StrategyCat::OnRtnOrder(CThostFtdcOrderField *pOrder) {
+	LOGGER::CTP_Log("下单返回%s",pOrder->StatusMsg);
+}

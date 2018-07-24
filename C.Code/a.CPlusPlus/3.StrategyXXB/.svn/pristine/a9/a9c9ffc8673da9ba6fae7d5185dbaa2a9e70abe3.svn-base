@@ -1,0 +1,25 @@
+#pragma once
+#include "AbstractStrategy.h"
+#include "KBarGenerater1.h"
+using namespace Abstract;
+class StrategyCat:public AbstractStrategy
+{
+public:
+	StrategyCat();
+	virtual ~StrategyCat();
+private :
+	int  postion;//挂单在队列中的位置
+	KBarGenerater1 * kbargen;
+	string symbol;
+
+protected:
+	virtual void OnRtnTrade(CThostFtdcTradeField *pTrade) ; //成交回报		
+	virtual void OnRspOrderAction(CThostFtdcInputOrderActionField *pInputOrderAction, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) ;
+	virtual void OnRtnDepthMarketData(CThostFtdcDepthMarketDataField *pDepthMarketData) ; //行情接收函数
+	virtual void  OnRspOrderInsert(CThostFtdcInputOrderField *pInputOrder, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) ;
+	virtual void  OnRtnOrder(CThostFtdcOrderField *pOrder) ;
+	virtual void OnInit();
+	void OnBar(TKDATA kdata);
+	virtual void OnTime(tm t);
+};
+

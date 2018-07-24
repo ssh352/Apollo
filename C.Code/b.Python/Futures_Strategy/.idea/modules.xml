@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://F:\Python\Futures_Strategy\.idea\FICC_Contract.iml" filepath="F:\Python\Futures_Strategy\.idea\FICC_Contract.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/Futures_Strategy.iml" filepath="$PROJECT_DIR$/.idea/Futures_Strategy.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../Stock_Strategy/.idea/Stock_Strategy.iml" filepath="$PROJECT_DIR$/../Stock_Strategy/.idea/Stock_Strategy.iml" />
+    </modules>
+  </component>
+</project>

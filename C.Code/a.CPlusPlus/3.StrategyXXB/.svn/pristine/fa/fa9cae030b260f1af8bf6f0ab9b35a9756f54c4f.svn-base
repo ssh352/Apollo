@@ -1,0 +1,109 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="RecordData.cpp" />
+    <ClCompile Include="stdafx.cpp" />
+    <ClCompile Include="StrategyBreakAlert.cpp" />
+    <ClCompile Include="StrategyCoffe.cpp" />
+    <ClCompile Include="StrategyFlirt.cpp" />
+    <ClCompile Include="StrategyMA.cpp" />
+    <ClCompile Include="StrategyDeviate.cpp" />
+    <ClCompile Include="StrategyMA40Alert.cpp" />
+    <ClCompile Include="StrategyOnBar.cpp" />
+    <ClCompile Include="StrategyTestMTOrder.cpp" />
+    <ClCompile Include="StrategyArbitrageNotice.cpp" />
+    <ClCompile Include="StrategyCat.cpp" />
+    <ClCompile Include="StrategyGrid.cpp" />
+    <ClCompile Include="StrategyXXB.cpp" />
+    <ClCompile Include="StrategyPostpone.cpp" />
+    <ClCompile Include="StrategyFICC.cpp" />
+    <ClCompile Include="StrategyFICCW.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="RecordData.h" />
+    <ClInclude Include="Resource.h" />
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="StrategyBreakAlert.h" />
+    <ClInclude Include="StrategyCoffe.h" />
+    <ClInclude Include="StrategyFlirt.h" />
+    <ClInclude Include="StrategyMA.h" />
+    <ClInclude Include="StrategyMA40Alert.h" />
+    <ClInclude Include="targetver.h" />
+    <ClInclude Include="StrategyDeviate.h" />
+    <ClInclude Include="StrategyOnBar.h" />
+    <ClInclude Include="StrategyTestMTOrder.h" />
+    <ClInclude Include="StrategyArbitrageNotice.h" />
+    <ClInclude Include="StrategyCat.h" />
+    <ClInclude Include="StrategyGrid.h" />
+    <ClInclude Include="StrategyXXB.h" />
+    <ClInclude Include="StrategyPostpone.h" />
+    <ClInclude Include="StrategyFICC.h" />
+    <ClInclude Include="StrategyFICCW.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="StrategyXXB.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="dllmain.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="StrategyCoffe.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="StrategyFlirt.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="RecordData.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="StrategyBreakAlert.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="StrategyMA.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="stdafx.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="targetver.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="StrategyCoffe.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="StrategyFlirt.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="RecordData.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="StrategyBreakAlert.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="StrategyMA.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="StrategyMA40Alert.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="StrategyXXB.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="StrategyXXB.def" />
+    <None Include="res\StrategyXXB.rc2" />
+  </ItemGroup>
+</Project>

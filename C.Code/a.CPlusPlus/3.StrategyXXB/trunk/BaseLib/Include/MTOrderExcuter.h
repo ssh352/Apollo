@@ -1,0 +1,55 @@
+#pragma once
+#include "BaseDataType.h"
+#include  "AbstractStrategy.h"
+namespace Abstract {
+
+  	class BASELIB_API MTOrderExcuter  {
+	public : 
+	void 	SetStrategy(AbstractStrategy* strategy);
+	/*从数据库中将OrderList 重新加载上来*/
+	void    LoadMTOrderList();
+	//添加一个MTOrder　　成功就返回true
+	bool   AddMTOrder(MTOrder mtorder);
+	//更新一个MTOrder 成功就返回true 根据mtorderid来更新
+	bool  EditMTOrder(MTOrder mtorder);
+    //删除一个MTOrder 成功返回true 
+	bool DeleteMTOrder(string mtorderid);
+
+	bool CloseMTorderForce(string mtorderid); //强制平仓
+	// 获得一个MTOrder 通过magicid获得所有的id
+	vector<MTOrder> GetMTOrdersByMagicNum(int magicnum);
+	vector<MTOrder> GetALLMTOrder();
+	// 根据mtorderid 获得MTOrder
+	MTOrder  GetMTOrderByID(string mtorderid);
+
+	vector<MTOrder> GetMTOrdersByStatus(MTOrderStatus mtorder);
+
+	 void OnRtnDepthMarketData(CThostFtdcDepthMarketDataField *pDepthMarketData);
+	 //处理普通单子
+	 void DealNormalMTOrder(MTOrder &order, CThostFtdcDepthMarketDataField *pDepthMarketData);
+	 //处理跟踪止损的单子
+	 void DealTrailingStopMTOrder(MTOrder&order, CThostFtdcDepthMarketDataField *pDepthMarketData); //
+
+	 //处理跟踪止盈的单子
+	 void DealTrailingCloseMTOrder(MTOrder&order, CThostFtdcDepthMarketDataField *pDepthMarketData);
+
+	 //设置最大持仓手数
+	 void SetMaxPostion(string instrumentid, int maxlockvolume);
+
+	 static HxEventEngine e;
+
+  private :	  
+	  map<string, int> maxpostionmap;  //允许的最大持仓量 用于锁仓模式 如果不设置则默认不开启锁仓模式
+	AbstractStrategy * strategy;
+	  vector<MTOrder> vec_mtorder;
+	  void CloseMTOrder(MTOrder &mtorder, CThostFtdcDepthMarketDataField *pDepthMarketData, MTOrderCloseReason reason);
+	  void CheckCloseMTOrder(MTOrder &mtorder, CThostFtdcDepthMarketDataField *pDepthMarketData);
+	  //开一个mtorder 的单子
+	  void OpenMTOrder(MTOrder &mtorder, CThostFtdcDepthMarketDataField *pDepthMarketData);
+	  void CheckOpenMTOrder(MTOrder &mtorder, CThostFtdcDepthMarketDataField *pDepthMarketData);
+
+
+
+	};
+
+}

@@ -1,0 +1,69 @@
+#pragma once
+
+#include "AbstractStrategy.h"
+#include "AbstractTdApi.h"
+//tdapi 包裹类  拦截tdapi 在insertorder　时将order 插入本地队列
+namespace Abstract {
+	class BASELIB_API TdApiWrapper:public AbstractTdApi
+	{
+	public:
+		TdApiWrapper();
+		virtual ~TdApiWrapper();
+		void SetAbstractStrategy(AbstractStrategy * abstractstategy);
+		void SetTdapi(CThostFtdcTraderApi * tdapi);
+	private:	
+		AbstractStrategy * abstractstrategy;
+		CThostFtdcTraderApi * tdapi;
+	private:
+		///报单录入请求
+		virtual int ReqOrderInsert(CThostFtdcInputOrderField *pInputOrder, int nRequestID);
+
+		///预埋单录入请求
+		virtual int ReqParkedOrderInsert(CThostFtdcParkedOrderField *pParkedOrder, int nRequestID);
+
+		///预埋撤单录入请求
+		virtual int ReqParkedOrderAction(CThostFtdcParkedOrderActionField *pParkedOrderAction, int nRequestID);
+
+		///报单操作请求
+		virtual int ReqOrderAction(CThostFtdcInputOrderActionField *pInputOrderAction, int nRequestID);
+	
+		///请求删除预埋单
+		virtual int ReqRemoveParkedOrder(CThostFtdcRemoveParkedOrderField *pRemoveParkedOrder, int nRequestID);
+
+		///请求删除预埋撤单
+		virtual int ReqRemoveParkedOrderAction(CThostFtdcRemoveParkedOrderActionField *pRemoveParkedOrderAction, int nRequestID);
+
+		///执行宣告录入请求
+		virtual int ReqExecOrderInsert(CThostFtdcInputExecOrderField *pInputExecOrder, int nRequestID);
+
+		///执行宣告操作请求
+		virtual int ReqExecOrderAction(CThostFtdcInputExecOrderActionField *pInputExecOrderAction, int nRequestID);
+
+		///询价录入请求
+		virtual int ReqForQuoteInsert(CThostFtdcInputForQuoteField *pInputForQuote, int nRequestID);
+
+		///报价录入请求
+		virtual int ReqQuoteInsert(CThostFtdcInputQuoteField *pInputQuote, int nRequestID);
+
+		///报价操作请求
+		virtual int ReqQuoteAction(CThostFtdcInputQuoteActionField *pInputQuoteAction, int nRequestID);
+
+		///申请组合录入请求
+		virtual int ReqCombActionInsert(CThostFtdcInputCombActionField *pInputCombAction, int nRequestID);
+
+		///请求查询报单
+	
+		///请求查询合约
+
+
+		///请求查询监控中心用户令牌
+
+
+
+
+
+
+	};
+
+	
+}
