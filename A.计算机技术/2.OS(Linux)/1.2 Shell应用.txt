@@ -1,0 +1,62 @@
+1.查找以test_开头，同时包含数字的字符串的行
+grep -or "^test_.*[0-9]\{1,\}.*" wangluo/* | wc -l
+###########
+
+# 2.shell结合python做语法检测
+#!/bin/bash -x
+n=0
+for file in `find . -name "*.*"`
+do
+   if test -f $file; then
+   file $file | grep -q CRLF
+   # cat $file | python -m json.tool 1>/dev/null
+     if [ $? -eq 0 ]; then
+       array[$n]=$file
+       n=$[$n+1]
+      fi
+    fi
+done
+if [ $n -ne 0 ];then
+  for ((i=0; i<$n; i++))
+  do
+    echo "[FFC ERROR] ${array[$i]} has (dos)file format check Failure."
+  done
+  echo -e "\e[1;31mTotal Fail Files(dos):$n\e[0m"
+  exit 1
+fi
+##########
+
+2.只检查git新提交patch文件的检查
+            #!/bin/bash -x
+            sudo pip install flake8
+            m=0
+            n=0
+            for tmp in `git diff HEAD~1 HEAD --name-only`
+            do
+              arr[$m]=$tmp
+              m=$[$m+1]
+            done
+
+            for file in `find ${arr[*]} -name "*.py"`
+            do
+              flake8 $file
+              if [ $? -ne 0 ];then
+                array[$n]=$file
+                n=$[$n+1]
+              fi
+            done
+            if [ $n -ne 0 ];then
+              for ((i=0; i<$n; i++))
+              do
+                echo "[FFC ERROR] ${array[$i]} has (PEP8)file format check Failure."
+              done
+              echo -e "\e[1;31mTotal Fail Files(PEP8):$n\e[0m"
+              exit 1
+            fi
+############
+
+3.多个语句组合，并根据前面结果查询
+cat error.yaml | python -m pyaml 2>&1 | grep -A 1 "yaml\.scanner"
+# yaml.scanner.ScannerError: while scanning a simple key
+# in "<stdin>", line 2, column 1
+##########

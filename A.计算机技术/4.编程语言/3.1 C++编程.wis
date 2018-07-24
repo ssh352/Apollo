@@ -1,0 +1,33 @@
+一、规范
+  1.注释
+    文件、函数以及变量的注释
+    1.1.文件注释
+      /*************************************************
+      Date:2010-08-25
+      Author: xia xianba
+      Copyright: Hexin Invest Inc.
+      Description: 描述主要实现的功能
+      **************************************************/
+      
+    1.2.函数注释
+      /*************************************************
+      Function:       // 函数名称
+      Description:    // 函数功能、性能等的描述
+        - input:          // 输入参数说明，包括每个参数的作              
+        - output:         // 对输出参数的说明。
+        - return:         // 函数返回值的说明
+      Calls:          // 被本函数调用的函数清单
+      Table Accessed: // 被访问的表（此项仅对于牵扯到数据库操作的程序）
+      Table Updated: // 被修改的表（此项仅对于牵扯到数据库操作的程序）
+      Others:         // 其它说明
+      *************************************************/
+      
+    1.3.变量
+    /* sccp interface with sccp user primitive message name */  
+    enum SCCP_USER_PRIMITIVE  
+    {  
+        N_UNITDATA_IND, /* sccp notify sccp user unit data come */  
+        N_NOTICE_IND,   /* sccp notify user the No.7 network can not */  
+                        /* transmission this message */  
+        N_UNITDATA_REQ, /* sccp user's unit data transmission request*/  
+    }; 

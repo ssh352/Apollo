@@ -1,0 +1,51 @@
+1.Before
+  install all develop package
+  
+2.Doing
+####################################
+import os
+ import json
+ import time
+ from git import Repo
+ from config.urls import urls
+ from config.repos import repos
+ from config.branches import branches
+ 
+ IGNORE_ERRORS= 'E125,E126,E128,E129,E265,H404,H405'  # from openstack/neutron project. 
+ 
+ def pep8_to_txt(repo):
+     pep8_res = os.popen('flake8 --count --statistics --exit-zero --ignore %s %s > %s.txt' % (IGNORE_ERRORS, repo, repo))
+     pep8_res = os.popen('flake8 --count --statistics --exit-zero --ignore %s %s > temp1.txt 2>temp2.txt && cat temp1.txt temp2.txt > %s.txt' % (IGNORE_ERRORS, repo, repo))
+ 
+ def clone_and_pep8(url, local_repo, remote_branch):
+     local_repo = u'/home/jenkins/workspace/test-pep8/cloudos/' + local_repo
+     try:
+         try:
+             Repo.clone_from(url, local_repo, branch=u'hw/mitaka')
+             if os.path.exists(local_repo):
+                 pep8_to_txt(local_repo)
+         except:
+             print "the hw/mitaka branch not exists in " + url
+             Repo.clone_from(url, local_repo, branch=remote_branch)
+             if os.path.exists(local_repo):
+                 pep8_to_txt(local_repo)
+             # Repo.clone_from(url, local_repo)
+     except:
+         print "the master branch not exists in " + url
+ 
+ for url, repo, branch in zip(urls, repos, branches):
+	
+     clone_and_pep8(url, repo, branch)
+ 
+ time.sleep(5)
+##############################
+
+3.after
+##########
+#!/bin/bash
+cat /home/jenkins/workspace/test-pep8/cloudos/*.txt | grep '^[0-9].*[A-Z]' | grep -E '[A-Z][0-9]{3}' > /home/jenkins/workspace/test-pep8/cloudos/part-info
+awk '{count[$2] = count[$2] + $1; $1=""; des[$2] = $0};END {for (item in count) printf("%5-s%s\n",count[item],des[item])}' /home/jenkins/workspace/test-pep8/cloudos/part-info > /home/jenkins/workspace/test-pep8/cloudos/conclusion
+
+awk '{sum += $1};END {print sum}' /home/jenkins/workspace/test-pep8/cloudos/conclusion > /home/jenkins/workspace/test-pep8/cloudos/count
+cat /home/jenkins/workspace/test-pep8/cloudos/conclusion /home/jenkins/workspace/test-pep8/cloudos/count > /home/jenkins/workspace/test-pep8/cloudos/cloudos.txt
+##########

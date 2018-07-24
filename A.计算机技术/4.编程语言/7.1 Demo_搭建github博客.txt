@@ -1,0 +1,5 @@
+jekyll框架详解
+http://www.zhanxin.info/jekyll/2013-08-07-jekyll-doc-installation.html
+
+基于jekyll框架的模板
+http://pizn.github.io/kunka/
