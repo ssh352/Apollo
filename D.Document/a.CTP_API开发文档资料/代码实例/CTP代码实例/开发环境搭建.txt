@@ -1,0 +1,21 @@
+1.API下载地址
+  a.http://www.simnow.com.cn/static/softwareDownload.action
+  b.http://www.sfit.com.cn/5_2_DocumentDown.htm
+  
+2.API文件的引用
+  a.添加目录：http://blog.csdn.net/phenixyf/article/details/29634285
+  b.添加文件：https://jingyan.baidu.com/article/da1091fb0aa896027849d6ca.html
+  
+3.项目参考
+  a.CTPtest: https://github.com/tashaxing/CTPtest
+  
+环境配置：
+1.选择相应相应操作系统相应版本的API文件，调试的时候也选择相应版本（这里以windows x64版本为例）
+
+2.添加头文件：项目->属性->VC++目录->包含目录：添加带.h的头文件
+
+3.配置静态库：
+  3.1.项目->属性->链接器->常规->附加库目录：添加带.lib文件的目录
+  3.2.项目->属性->链接器->输入->附加依赖项：添加带.lib的文件
+  
+4.配置动态库：将相应的dll文件放到Debug目录下，调试相应的程序

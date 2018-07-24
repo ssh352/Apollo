@@ -1,0 +1,27 @@
+1.MQL语言是一门类似C/C++的语言。
+
+2.语法
+  a.注释 
+    // /*...*/
+  b.数据类型
+    整型 字符串 浮点型
+    结构体
+	类
+  c.操作符
+    算术
+	赋值
+	比较
+	逻辑
+	位
+	
+3.变量
+  a.
+
+4.函数
+  a.交易函数
+    Old-MQL4: init() start() deinit()
+	New-MQL4: OnInit() OnStart() OnCalculate() OnTick() OnTimer() OnChartEvent() OnTester() OnDeinit()
+  b.转换函数
+    TimeToStruct
+	
+	
