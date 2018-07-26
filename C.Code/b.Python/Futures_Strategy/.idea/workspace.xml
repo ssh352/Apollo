@@ -74,6 +74,7 @@
     <SUITE FILE_PATH="coverage/Futures_Strategy$volume_inventory.coverage" NAME="volume_inventory Coverage Results" MODIFIED="1531985983009" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/FICC_Contract$sma.coverage" NAME="sma Coverage Results" MODIFIED="1509003030832" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/Futures_Strategy$return_inventory.coverage" NAME="return_inventory Coverage Results" MODIFIED="1531302024618" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/Futures_Strategy$test_str_step.coverage" NAME="test_str_step Coverage Results" MODIFIED="1532591478200" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/Futures_Strategy$count_AShares.coverage" NAME="count_AShares Coverage Results" MODIFIED="1527760257508" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/../Stock_Strategy" />
     <SUITE FILE_PATH="coverage/FICC_Contract$PickStock.coverage" NAME="PickStock Coverage Results" MODIFIED="1518400217366" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/FICC_Contract$curve_fitting.coverage" NAME="curve_fitting Coverage Results" MODIFIED="1507792514260" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
@@ -97,8 +98,20 @@
       <file leaf-file-name="RQuote_MarketEmotion.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/../Stock_Strategy/RQuote_MarketEmotion.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="159">
-              <caret line="20" column="105" lean-forward="false" selection-start-line="20" selection-start-column="105" selection-end-line="20" selection-end-column="105" />
+            <state relative-caret-position="74">
+              <caret line="16" column="11" lean-forward="true" selection-start-line="16" selection-start-column="11" selection-end-line="16" selection-end-column="11" />
+              <folding>
+                <element signature="e#257#277#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="test_str_step.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/test_str_step.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="578">
+              <caret line="34" column="24" lean-forward="true" selection-start-line="34" selection-start-column="24" selection-end-line="34" selection-end-column="24" />
               <folding />
             </state>
           </provider>
@@ -134,7 +147,6 @@
         <option value="$PROJECT_DIR$/Simulation/SimTrade_Wai.py" />
         <option value="F:/StrategyXXB/trunk/x64/Debug/python/SimTrade_Wai.py" />
         <option value="$PROJECT_DIR$/PickStock.py" />
-        <option value="$PROJECT_DIR$/test_str_step.py" />
         <option value="$PROJECT_DIR$/FootShape_XY.py" />
         <option value="$PROJECT_DIR$/Simulation/SimTrade.py" />
         <option value="$PROJECT_DIR$/../Stock_Strategy/AK_Adapt.py" />
@@ -180,6 +192,7 @@
         <option value="$PROJECT_DIR$/../Stock_Strategy/RealQuotation_Demo.py" />
         <option value="$PROJECT_DIR$/../Stock_Strategy/RealQuote_Test.py" />
         <option value="$PROJECT_DIR$/volume_inventory.py" />
+        <option value="$PROJECT_DIR$/test_str_step.py" />
         <option value="$PROJECT_DIR$/../Stock_Strategy/RQuote_MarketEmotion.py" />
       </list>
     </option>
@@ -221,7 +234,7 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="Stock_Strategy" />
+              <option name="myItemId" value="Futures_Strategy" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -251,7 +264,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.RQuote_MarketEmotion">
+  <component name="RunManager" selected="Python.test_str_step">
     <configuration default="false" name="RealQuotation_Demo" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -266,25 +279,6 @@
       <module name="Stock_Strategy" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" enabled="false" sample_coverage="true" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="F:\Python\Stock_Strategy\RQuote_MarketEmotion.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <method />
-    </configuration>
-    <configuration default="false" name="wsq_wind_example" type="PythonConfigurationType" factoryName="Python" temporary="true">
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../Stock_Strategy" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <module name="Stock_Strategy" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" enabled="false" sample_coverage="true" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/../Stock_Strategy/wsq_wind_example.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -342,6 +336,25 @@
       <module name="Futures_Strategy" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" enabled="false" sample_coverage="true" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/volume_inventory.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <method />
+    </configuration>
+    <configuration default="false" name="test_str_step" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="Futures_Strategy" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" enabled="false" sample_coverage="true" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/test_str_step.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -534,18 +547,18 @@
     <list size="6">
       <item index="0" class="java.lang.String" itemvalue="Python.SimTrade" />
       <item index="1" class="java.lang.String" itemvalue="Python.RealQuotation_Demo" />
-      <item index="2" class="java.lang.String" itemvalue="Python.wsq_wind_example" />
-      <item index="3" class="java.lang.String" itemvalue="Python.RealQuote_Test" />
-      <item index="4" class="java.lang.String" itemvalue="Python.RQuote_MarketEmotion" />
-      <item index="5" class="java.lang.String" itemvalue="Python.volume_inventory" />
+      <item index="2" class="java.lang.String" itemvalue="Python.RealQuote_Test" />
+      <item index="3" class="java.lang.String" itemvalue="Python.RQuote_MarketEmotion" />
+      <item index="4" class="java.lang.String" itemvalue="Python.volume_inventory" />
+      <item index="5" class="java.lang.String" itemvalue="Python.test_str_step" />
     </list>
     <recent_temporary>
       <list size="5">
-        <item index="0" class="java.lang.String" itemvalue="Python.RQuote_MarketEmotion" />
-        <item index="1" class="java.lang.String" itemvalue="Python.volume_inventory" />
-        <item index="2" class="java.lang.String" itemvalue="Python.RealQuote_Test" />
-        <item index="3" class="java.lang.String" itemvalue="Python.RealQuotation_Demo" />
-        <item index="4" class="java.lang.String" itemvalue="Python.wsq_wind_example" />
+        <item index="0" class="java.lang.String" itemvalue="Python.test_str_step" />
+        <item index="1" class="java.lang.String" itemvalue="Python.RQuote_MarketEmotion" />
+        <item index="2" class="java.lang.String" itemvalue="Python.volume_inventory" />
+        <item index="3" class="java.lang.String" itemvalue="Python.RealQuote_Test" />
+        <item index="4" class="java.lang.String" itemvalue="Python.RealQuotation_Demo" />
       </list>
     </recent_temporary>
   </component>
@@ -625,13 +638,6 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/../Stock_Strategy/NewStock.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="206">
-          <caret line="23" column="32" lean-forward="true" selection-start-line="23" selection-start-column="32" selection-end-line="23" selection-end-column="32" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://C:/Program Files (x86)/Wind/x64/WindPy.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1387">
@@ -928,11 +934,21 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/test_str_step.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="578">
+          <caret line="34" column="24" lean-forward="true" selection-start-line="34" selection-start-column="24" selection-end-line="34" selection-end-column="24" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/../Stock_Strategy/RQuote_MarketEmotion.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="159">
-          <caret line="20" column="105" lean-forward="false" selection-start-line="20" selection-start-column="105" selection-end-line="20" selection-end-column="105" />
-          <folding />
+        <state relative-caret-position="74">
+          <caret line="16" column="11" lean-forward="true" selection-start-line="16" selection-start-column="11" selection-end-line="16" selection-end-column="11" />
+          <folding>
+            <element signature="e#257#277#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>

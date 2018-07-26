@@ -149,7 +149,7 @@ for(i in 1:length(filelist))
 }
 
 #==========================2018.07.18库存环比数据============================================#
-HPeriod<-40
+HPeriod<-30
 TPeriod<-365
 Matrix_CHRatio<-matrix(NA,nrow=length(calendar_day),ncol=length(secu_Code))  #保存同比数据矩阵
 Matrix_LHRatio<-matrix(NA,nrow=length(calendar_day),ncol=length(secu_Code)) #保存环比的同比数据矩阵
@@ -235,7 +235,7 @@ Matrix_DiffRatio<-Matrix_CHRatio-Matrix_LHRatio
 
 
 #============================================================================================#
-KHolding<-15      #换仓周期
+KHolding<-10      #换仓周期
 
 quantile_max <- matrix(NA,nrow = length(trade_day),ncol = 5)
 Return_Tmp<-matrix(NA,nrow =length(secu_Code),ncol = 2)
@@ -337,8 +337,8 @@ for(i in seq(1,(length(trade_day)-KHolding), KHolding))
 #==================================统计交易记录==========================================#
 long_max[which(is.na(long_max)==1)] <- ''
 short_max[which(is.na(short_max)==1)] <- ''
-write.csv(long_max, "./data/invetory_long_tradelist.csv")
-write.csv(short_max, "./data/invetory_short_tradelist.csv")
+write.csv(long_max, "./data/invetory_long_record.csv")
+write.csv(short_max, "./data/invetory_short_record.csv")
 
 #==================================计算夏普比率==========================================#
 # bench_mean<-mean(bench_mark_re,trim=0,na.rm=TRUE)
@@ -354,6 +354,29 @@ bench_mark_re[which(is.na(bench_mark_re)==1,arr.ind = T)] <- 0
 startIndex<-487
 plot(cumsum(bench_mark_re[startIndex:length(bench_mark_re)]),type="l",ylim = c(-0.3,1.5))
 axis(1,at=1:length(trade_day[startIndex:length(trade_day)]),labels=trade_day[startIndex:length(trade_day)])
+
+#================================收集收益率曲线==========================================#
+write.csv(bench_mark_re, "./data/bench_mark_re.csv")
+
+#==================================最大回撤============================================#
+maxdown<-maxdrawdown(cumsum(bench_mark_re[startIndex:length(bench_mark_re)]))
+
+maxdownratio<-function (x) 
+{
+  if (NCOL(x) > 1) 
+    stop("x is not a vector or univariate time series")
+  if (any(is.na(x))) 
+    stop("NAs in x")
+  cmaxx <- ((cummax(x)+1) - (x+1))/(cummax(x)+1)
+  mdd <- max(cmaxx)
+  to <- which(mdd == cmaxx)
+  from <- double(NROW(to))
+  for (i in 1:NROW(to)) from[i] <- max(which(cmaxx[1:to[i]] == 
+                                               0))
+  return(list(maxdrawdown = mdd, from = from, to = to))
+}
+
+maxdownratio<-maxdownratio(cumsum(bench_mark_re[startIndex:length(bench_mark_re)]))
 
 #===================================统计收益率和夏普===================================#
 # year_index<-c(487,731,974,1212,1457,1701,1945,2189,2293)

@@ -14,7 +14,7 @@ library(openxlsx)
 library(xlsx)
 
 #=======================设置工作路径=========================#
-setwd("F:/RProject") 
+setwd("F:/Apollo/C.Code/c.RProject") 
 
 #===================加载品种原始数据=========================#
 inventory_return <-as.matrix( read.csv("./data/inventory_return_XXL.csv",header = FALSE))
@@ -116,7 +116,8 @@ for(i in 1:length(filelist))
 }
 
 TPeriod<-365
-Matrix_TRatio<-matrix(NA,nrow=length(calendar_day),ncol=length(secu_Code))  #保存同比数据矩阵
+Matrix_TRatio<-matrix(NA,nrow=length(calendar_day),ncol=length(secu_Code))  
+Matrix_HRatio<-matrix(NA,nrow=length(calendar_day),ncol=length(secu_Code))  
 for(i in 1:length(filelist))
 {
   for(j in TPeriod:length(calendar_day))

@@ -30,10 +30,9 @@ def get_trade_day(begin_date, end_date):
 
 if __name__ == "__main__":
 
-    if 5>3>4:
-        print "good"
-    else:
-        print "bigon"
+    w.start()
+    result = w.wset("sectorconstituent", "date=2018-07-26;sectorid=a001010100000000")
+    print result.Data[1]
 
     # date_start_t = datetime.strptime("2018-02-08", "%Y-%m-%d")
     # date_now_t = datetime.today()
