@@ -244,6 +244,9 @@ Diff_Tmp<-matrix(NA,nrow =length(secu_Code),ncol = 2)
 Vol_Tmp<-matrix(NA,nrow =length(secu_Code),ncol = 2)
 bench_mark_re <- c()
 
+long_max <- matrix(NA,nrow = length(trade_day),ncol = 20)
+short_max <- matrix(NA,nrow = length(trade_day),ncol = 20)
+
 for(i in seq(1,(length(trade_day)-KHolding), KHolding))
 {
   if(trade_day[i]>=calendar_day[HPeriod+TPeriod])
@@ -288,6 +291,26 @@ for(i in seq(1,(length(trade_day)-KHolding), KHolding))
     real_long_index<-intersect(index_tmp, long_index)
     
     #===============================交易品种写入文件=========================#
+    
+    if(length(real_long_index)>0)
+    {
+      long_max[i,1] <- as.character(trade_day[i])
+      for(j in 1:length(real_long_index))
+      {
+        long_max[i,j:j+1] <- secu_Code[real_long_index[j]]
+      }
+    }
+    
+    if(length(real_short_index)>0)
+    {
+      short_max[i,1] <- as.character(trade_day[i])
+      for(k in 1:length(real_short_index))
+      {
+        short_max[i,k:k+1] <- secu_Code[real_short_index[k]]
+      }
+    }
+    
+    # long_max[i,2:(length(as.numeric(real_long_index))+1)] <- secu_Code(as.numeric(real_long_index))
     # list_csv<-list(trade_day[i])
     # for(i in real_short_index)
     # {
@@ -297,7 +320,7 @@ for(i in seq(1,(length(trade_day)-KHolding), KHolding))
     # {
     #   list_long_csv<-c(list_csv,list(secu_Code[i]))
     # }
-    # write.csv(list_short_csv, "./data/123.csv")
+    # write.csv(real_short_index, "./data/123.csv")
     # write.csv(list_long_csv, "./data/inve_long_tradelist.csv")
     
     #========================================================================#
@@ -311,6 +334,12 @@ for(i in seq(1,(length(trade_day)-KHolding), KHolding))
     bench_mark_re[(i+1):(i+KHolding)] <- rowSums(bench_re_Max_Long)/length(real_long_index)-rowSums(bench_re_Max_Short)/length(real_short_index)
   }
 }
+#==================================统计交易记录==========================================#
+long_max[which(is.na(long_max)==1)] <- ''
+short_max[which(is.na(short_max)==1)] <- ''
+write.csv(long_max, "./data/invetory_long_tradelist.csv")
+write.csv(short_max, "./data/invetory_short_tradelist.csv")
+
 #==================================计算夏普比率==========================================#
 # bench_mean<-mean(bench_mark_re,trim=0,na.rm=TRUE)
 # bench_sd<-sd(bench_mark_re,na.rm=TRUE)
