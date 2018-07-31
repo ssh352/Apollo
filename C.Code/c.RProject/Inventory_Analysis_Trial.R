@@ -133,11 +133,13 @@ Matrix_TRatio<-matrix(NA,nrow=length(calendar_day),ncol=length(secu_Code))  #保
 for(i in 1:length(filelist))
 {
   #=============思路：获取对比数据的个数，只有在个数相同的情况下，作比较===================#
-  for(j in TPeriod:length(calendar_day))
+  for(j in (TPeriod+1):length(calendar_day))
   {
-    Inventory_Last<-Inventory_Array[(j-TPeriod+1),,i]
+    #修改原来+1的逻辑
+    #Inventory_Last<-Inventory_Array[(j-TPeriod+1),,i]
+    Inventory_Last<-Inventory_Array[(j-TPeriod),,i]
     ValidDataIndex<-which(is.na(Inventory_Last)!=1 )
-    Inventory_Last<-sum(Inventory_Array[(j-TPeriod+1),ValidDataIndex,i])
+    Inventory_Last<-sum(Inventory_Array[(j-TPeriod),ValidDataIndex,i])
     # 问题：会不会存在NOW的某列数据没有的情况？
     Inventory_Now <-sum(Inventory_Array[j,ValidDataIndex,i])
     if(Inventory_Now>1e-5)
@@ -158,14 +160,15 @@ Matrix_DiffRatio<-matrix(NA,nrow=length(calendar_day),ncol=length(secu_Code)) #�
 for(i in 1:length(filelist))
 {
   #=============思路：获取对比数据的个数，只有在个数相同的情况下，作比较===================#
-  for(j in HPeriod:length(calendar_day))
+  for(j in (HPeriod+1):length(calendar_day))
   {
-    CL_Inventory<-Inventory_Array[(j-HPeriod+1),,i]
+    #CL_Inventory<-Inventory_Array[(j-HPeriod+1),,i]
+    CL_Inventory<-Inventory_Array[(j-HPeriod),,i]
     ValidDataIndex<-which(is.na(CL_Inventory)!=1 )
-    CL_Inventory<-sum(Inventory_Array[(j-HPeriod+1),ValidDataIndex,i])
+    CL_Inventory<-sum(Inventory_Array[(j-HPeriod),ValidDataIndex,i])
     # 问题：会不会存在NOW的某列数据没有的情况？
     CC_Inventory <-sum(Inventory_Array[j,ValidDataIndex,i])
-    if(Inventory_Now>1e-5)
+    if(CL_Inventory>1e-5)
     {
       Matrix_CHRatio[j,i]<-(CC_Inventory-CL_Inventory)/CL_Inventory
     }
@@ -175,14 +178,15 @@ for(i in 1:length(filelist))
 for(i in 1:length(filelist))
 {
   #=============思路：获取对比数据的个数，只有在个数相同的情况下，作比较===================#
-  for(j in (HPeriod+TPeriod):length(calendar_day))
+  for(j in (HPeriod+TPeriod+1):length(calendar_day))
   {
-    LL_Inventory<-Inventory_Array[(j-HPeriod-TPeriod+1),,i]
+    #LL_Inventory<-Inventory_Array[(j-HPeriod-TPeriod+1),,i]
+    LL_Inventory<-Inventory_Array[(j-HPeriod-TPeriod),,i]
     ValidDataIndex<-which(is.na(LL_Inventory)!=1 )
-    LL_Inventory<-sum(Inventory_Array[(j-HPeriod-TPeriod+1),ValidDataIndex,i])
+    LL_Inventory<-sum(Inventory_Array[(j-HPeriod-TPeriod),ValidDataIndex,i])
     # 问题：会不会存在NOW的某列数据没有的情况？
     LC_Inventory <-sum(Inventory_Array[j-TPeriod,ValidDataIndex,i])
-    if(Inventory_Now>1e-5)
+    if(LL_Inventory>1e-5)
     {
       Matrix_LHRatio[j,i]<-(LC_Inventory-LL_Inventory)/LL_Inventory
     }
@@ -191,6 +195,7 @@ for(i in 1:length(filelist))
 
 #库存环比的同比数据差值
 Matrix_DiffRatio<-Matrix_CHRatio-Matrix_LHRatio
+
 #==========================================================================================#
 
 
@@ -339,6 +344,7 @@ long_max[which(is.na(long_max)==1)] <- ''
 short_max[which(is.na(short_max)==1)] <- ''
 write.csv(long_max, "./data/invetory_long_record.csv")
 write.csv(short_max, "./data/invetory_short_record.csv")
+write.csv(Matrix_DiffRatio, "./data/invetory_diff.csv")
 
 #==================================计算夏普比率==========================================#
 # bench_mean<-mean(bench_mark_re,trim=0,na.rm=TRUE)

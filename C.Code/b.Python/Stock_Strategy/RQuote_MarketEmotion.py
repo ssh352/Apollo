@@ -59,9 +59,13 @@ def DemoWSQCallback(result):
                     continue
             # print DICT_CODES
             # print result.Codes[code], DICT_CODES[result.Codes[code]][0][-1], DICT_CODES[result.Codes[code]][1][-1]
+            print "len1=",len(DICT_CODES[result.Codes[code]][0])>10
+            print "len2=",len(DICT_CODES[result.Codes[code]][1])>60
+            print "sum1=",sum(DICT_CODES[result.Codes[code]][0][-11:-1])
+            print "sum2=",sum(DICT_CODES[result.Codes[code]][1][-61:-1])
             if len(DICT_CODES[result.Codes[code]][0])>10 and len(DICT_CODES[result.Codes[code]][1])>60 and \
-                            DICT_CODES[result.Codes[code]][0][-1] > sum(DICT_CODES[result.Codes[code]][0][-11:-1]) and \
-                            DICT_CODES[result.Codes[code]][1][-1] >= max(DICT_CODES[result.Codes[code]][1][-61:-1]):
+                            DICT_CODES[result.Codes[code]][0][-1] >= sum(DICT_CODES[result.Codes[code]][0][-11:-1]) and \
+                            DICT_CODES[result.Codes[code]][1][-1] >= sum(DICT_CODES[result.Codes[code]][1][-61:-1]):
                 print ">>>>", result.Codes[code], DICT_CODES[result.Codes[code]][0][-1], DICT_CODES[result.Codes[code]][1][-1]
 
         # except Exception as ex:
