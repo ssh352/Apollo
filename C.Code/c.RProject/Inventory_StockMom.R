@@ -13,7 +13,7 @@ setwd("F:/Apollo/C.Code/c.RProject")
 KReserve<-5        #动量排序期
 
 NPeriod<-365       #同比周期
-KHolding<-15       #换仓周期
+KHolding<-5       #换仓周期
 TradeRatio<-0.2    #持仓比例
 StartDay <- 20090101
 EndDay<-20180608
@@ -26,6 +26,7 @@ calendar_day <- year(tmp)*10000+month(tmp)*100+day(tmp)
 tmp<-inventory_return[2:nrow(inventory_return)]
 trade_day <- year(tmp)*10000+month(tmp)*100+day(tmp)
 secu_Code<-inventory_return[1,2:ncol(inventory_ratio)]
+#Matrix_Return<-as.matrix(inventory_return[2:nrow(inventory_return),2:ncol(inventory_return)])
 Matrix_Return<-as.matrix(inventory_return[2:nrow(inventory_return),2:ncol(inventory_return)])
 Matrix_Return=apply(Matrix_Return,2,as.numeric)
 Matrix_Ratio<-as.matrix(inventory_ratio[2:nrow(inventory_ratio),2:ncol(inventory_ratio)])
@@ -136,70 +137,86 @@ Ratio_Tmp<-matrix(NA,nrow =length(secu_Code),ncol = 2)
 
 bench_mark_re <- c()
 
-for(i in seq(1,(length(trade_day)-KHolding), KHolding))
+for(i in seq(KReserve+1,(length(trade_day)-KHolding), KHolding))
 {
   if(trade_day[i]>(StartDay+NPeriod))
   {
     Return_Tmp<-matrix(NA,nrow =length(secu_Code),ncol = 2)
     Ratio_Tmp<-matrix(NA,nrow =length(secu_Code),ncol = 2)
-    #============判断当前的Return、和环比数据中的有效值，排序==========#
-    Return_Tmp[,1]<-1:length(secu_Code)
-    Return_Tmp[,2]<-Matrix_Return[i,]
-    index_tmp1<-which(is.na(Return_Tmp[,2])!=1)  
+    Mom_Tmp<-matrix(NA,nrow =length(secu_Code),ncol = 2)
     
-    #==================================================================#
+    #========================基础过滤========================#
+    Mom_Tmp[,1]<-1:length(secu_Code)
+    Mom_Tmp[,2]<-colSums(Matrix_Return[i-KReserve:i,])
+    index_mom<-which(is.na(Mom_Tmp[,2])!=1)  
+    
     Ratio_index<-which(calendar_day==trade_day[i])
     Ratio_Tmp[,1]<-(1:length(secu_Code))
     Ratio_Tmp[,2]<-Matrix_TRatio[Ratio_index,]
-    index_tmp2<-which(is.na(Ratio_Tmp[,2])!=1)
+    index_stock<-which(is.na(Ratio_Tmp[,2])!=1)
+    
+    index_init<-intersect(index_mom,index_stock)
+    
+    #========================按动量进行排序排序========================#
+    len_init<-length(index_init)
+    
+    # for(i in 1:5)
+    # {
+    #   if(i==3)
+    #     next
+    #   print(i)
+    # }
+    if(len_init<4)
+    {
+      bench_mark_re[(i+1):(i+KHolding)]<-0
+      next
+    }
+    
+    Mom_sort<-matrix(NA,nrow =length(index_init),ncol = 2)
+    Mom_sort[,1]<-index_init
+    Mom_sort[,2]<-Mom_Tmp[index_init,2]
+    
+    Mom_sort<-Mom_sort[order(Mom_sort[,2],decreasing=T),]
+    Mom_long_index<-Mom_sort[1:floor(len_init/2),1]
+    Mom_short_index<-Mom_sort[((len_init-(floor(len_init/2)))+1):len_init,1]
+    
+    #===========================按同比指标===============================#
+    Ratio_index<-which(calendar_day==trade_day[i])
+    Ratio_long<-matrix(NA,nrow =length(Mom_long_index),ncol = 2)
+    Ratio_long[,1]<-Mom_long_index
+    Ratio_long[,2]<-Matrix_TRatio[Ratio_index,Mom_long_index]
+    Ratio_long<-Ratio_long[order(Ratio_long[,2],decreasing=F),]
+    
+    len_long<-length(Ratio_long[,1])
+    index_long<-Ratio_long[1:floor(len_long/2),1]
+    
+    Ratio_short<-matrix(NA,nrow =length(Mom_short_index),ncol = 2)
+    Ratio_short[,1]<-Mom_short_index
+    Ratio_short[,2]<-Matrix_TRatio[Ratio_index,Mom_short_index]
+    Ratio_short<-Ratio_short[order(Ratio_short[,2],decreasing=T),]
+    
+    len_short<-length(Ratio_short[,1])
+    index_short<-Ratio_short[1:floor(len_short/2),1]
     #==================================================================#
-    
-    index_tmp<-intersect(index_tmp1,index_tmp2)
-    Ratio_Tmp<-Ratio_Tmp[index_tmp,]
-    Ratio_Tmp <-Ratio_Tmp[order(Ratio_Tmp[,2],decreasing=T),]
-    #==================================================================#
-    
-    
-    
     
     #=================构建组合，KHolding换仓，分层测试=================#
-    TradeNum<-floor(nrow(Ratio_Tmp)*TradeRatio)
-    len=nrow(Ratio_Tmp)
+    bench_re_Max_Long <- as.matrix(Matrix_Return[(i+1):(i+KHolding),index_long])
+    bench_re_Max_Long[which(is.na(bench_re_Max_Long)==1,arr.ind = T)] <- 0
     
-    if(TradeNum>0)
-    {
-      bench_Short_Index<-Ratio_Tmp[1:floor(len/5),1]
-      bench_Long_Index<-Ratio_Tmp[(len-floor(len/5)+1):len,1]
-      for(kk in 1:5)
-      {
-        max_index<-Ratio_Tmp[((kk-1)*floor(len/5)+1):(kk*floor(len/5)),1]
-        temp_re_max <- Matrix_Return[(i+1):(i+KHolding),max_index]
-        temp_re_max[which(is.na(temp_re_max)==1,arr.ind = T)] <- 0
-        ret <- rowSums(temp_re_max)/length(max_index)
-        quantile_max[(i+1):(i+KHolding),kk] <- ret
-      }
-      bench_re_Max_Long <- Matrix_Return[(i+1):(i+KHolding),bench_Long_Index]
-      bench_re_Max_Long[which(is.na(bench_re_Max_Long)==1,arr.ind = T)] <- 0
-      
-      bench_re_Max_Short <- Matrix_Return[(i+1):(i+KHolding),bench_Short_Index]
-      bench_re_Max_Short[which(is.na(bench_re_Max_Short)==1,arr.ind = T)] <- 0
-      
-      bench_mark_re[(i+1):(i+KHolding)] <- rowSums(bench_re_Max_Long)/length(bench_Long_Index)-rowSums(bench_re_Max_Short)/length(bench_Short_Index)
-    }
+    bench_re_Max_Short <- as.matrix(Matrix_Return[(i+1):(i+KHolding),index_short])
+    bench_re_Max_Short[which(is.na(bench_re_Max_Short)==1,arr.ind = T)] <- 0
+    
+    bench_mark_re[(i+1):(i+KHolding)] <- rowSums(bench_re_Max_Long)/nrow(bench_re_Max_Long)-rowSums(bench_re_Max_Short)/nrow(bench_re_Max_Short)
+
   }
 }
 
 #================================作图============================================#
-startIndex<-300
-# plot(cumsum(bench_mark_re[startIndex:length(bench_mark_re)]),type="l")
-# axis(1,at=1:length(trade_day[startIndex:length(trade_day)]),labels=trade_day[startIndex:length(trade_day)])
+bench_mark_re[which(is.na(bench_mark_re)==1,arr.ind = T)] <- 0
 
-plot(cumsum(quantile_max[startIndex:nrow(quantile_max),1]),type="l",ylim = c(-0.3,1.5),xaxt="n")
-lines(cumsum(quantile_max[startIndex:nrow(quantile_max),2]),type="l",col="red")
-lines(cumsum(quantile_max[startIndex:nrow(quantile_max),3]),type="l",col="blue")
-lines(cumsum(quantile_max[startIndex:nrow(quantile_max),4]),type="l",col="green")
-lines(cumsum(quantile_max[startIndex:nrow(quantile_max),5]),type="l",col="purple")
+startIndex<-287
+plot(cumsum(bench_mark_re[startIndex:length(bench_mark_re)]),type="l",ylim = c(-1.0,1.0))
 axis(1,at=1:length(trade_day[startIndex:length(trade_day)]),labels=trade_day[startIndex:length(trade_day)])
-#================================================================================#
+
 
 

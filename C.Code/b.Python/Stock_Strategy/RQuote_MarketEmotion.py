@@ -15,6 +15,8 @@
 
 from WindPy import *
 import time
+import datetime as pydt
+import copy
 
 DICT_CODES = {  # "": [[], []], "": [[], []], "": [[], []], "": [[], []], "": [[], []],
     "600186.SH": [[], []], "600225.SH": [[], []], "002021.SZ": [[], []], "002676.SZ": [[], []], "002357.SZ": [[], []],
@@ -33,6 +35,19 @@ DICT_CODES = {  # "": [[], []], "": [[], []], "": [[], []], "": [[], []], "": [[
     "300032.SZ": [[], []], "601789.SH": [[], []], "002379.SZ": [[], []], "600139.SH": [[], []], "600212.SH": [[], []],
     "601700.SH": [[], []], "600084.SH": [[], []], "300090.SZ": [[], []], "002471.SZ": [[], []], "000897.SZ": [[], []],
     "300028.SZ": [[], []], "600777.SH": [[], []], "002554.SZ": [[], []], "300345.SZ": [[], []], "600131.SH": [[], []],}
+
+
+def get_available_stock(dict_stock):
+
+    date_today = pydt.date.today().strftime('%Y-%m-%d')
+    result = w.wset("tradesuspend","startdate="+date_today+";enddate="+date_today+";field=date,wind_code")
+    list_stock = result.Data[1]
+
+    for stock_suspend in dict_stock.keys():
+        if stock_suspend in list_stock:
+            dict_stock.pop(stock_suspend)
+
+    return dict_stock
 
 
 def DemoWSQCallback(result):
@@ -59,10 +74,10 @@ def DemoWSQCallback(result):
                     continue
             # print DICT_CODES
             # print result.Codes[code], DICT_CODES[result.Codes[code]][0][-1], DICT_CODES[result.Codes[code]][1][-1]
-            print "len1=",len(DICT_CODES[result.Codes[code]][0])>10
-            print "len2=",len(DICT_CODES[result.Codes[code]][1])>60
-            print "sum1=",sum(DICT_CODES[result.Codes[code]][0][-11:-1])
-            print "sum2=",sum(DICT_CODES[result.Codes[code]][1][-61:-1])
+            # print "len1=",len(DICT_CODES[result.Codes[code]][0])>10
+            # print "len2=",len(DICT_CODES[result.Codes[code]][1])>60
+            # print "sum1=",sum(DICT_CODES[result.Codes[code]][0][-11:-1])
+            # print "sum2=",sum(DICT_CODES[result.Codes[code]][1][-61:-1])
             if len(DICT_CODES[result.Codes[code]][0])>10 and len(DICT_CODES[result.Codes[code]][1])>60 and \
                             DICT_CODES[result.Codes[code]][0][-1] >= sum(DICT_CODES[result.Codes[code]][0][-11:-1]) and \
                             DICT_CODES[result.Codes[code]][1][-1] >= sum(DICT_CODES[result.Codes[code]][1][-61:-1]):
@@ -105,7 +120,8 @@ def DemoWSQCallback(result):
 if __name__ == "__main__":
 
     w.start()
-    w.wsq(DICT_CODES.keys(), "rt_amt,rt_time,rt_last,rt_last_vol,rt_vol", func=DemoWSQCallback)
+    dict_stock = get_available_stock(copy.deepcopy(DICT_CODES))
+    w.wsq(dict_stock.keys(), "rt_amt,rt_time,rt_last,rt_last_vol,rt_vol", func=DemoWSQCallback)
 
     while True:
         time.sleep(0.1)

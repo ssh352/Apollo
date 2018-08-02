@@ -31,7 +31,8 @@ def get_trade_day(begin_date, end_date):
 if __name__ == "__main__":
 
     w.start()
-    result = w.wset("sectorconstituent", "date=2018-07-26;sectorid=a001010100000000")
+    # result = w.wset("sectorconstituent", "date=2018-07-26;sectorid=a001010100000000")
+    result = w.wset("tradesuspend","startdate=2018-08-02;enddate=2018-08-02;field=date,wind_code")
     print result.Data[1]
 
     # date_start_t = datetime.strptime("2018-02-08", "%Y-%m-%d")
