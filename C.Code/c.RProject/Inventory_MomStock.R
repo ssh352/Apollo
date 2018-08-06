@@ -172,29 +172,32 @@ for(i in seq(KReserve+1,(length(trade_day)-KHolding), KHolding))
       next
     }
     
+    Mom_sort<-matrix(NA,nrow =length(index_init),ncol = 2)
+    Mom_sort[,1]<-index_init
+    Mom_sort[,2]<-Mom_Tmp[index_init,2]
+    
+    Mom_sort<-Mom_sort[order(Mom_sort[,2],decreasing=T),]
+    Mom_long_index<-Mom_sort[1:floor(len_init/2),1]
+    Mom_short_index<-Mom_sort[((len_init-(floor(len_init/2)))+1):len_init,1]
+    
     #===========================按同比指标===============================#
     Ratio_index<-which(calendar_day==trade_day[i])
+    Ratio_long<-matrix(NA,nrow =length(Mom_long_index),ncol = 2)
+    Ratio_long[,1]<-Mom_long_index
+    Ratio_long[,2]<-Matrix_TRatio[Ratio_index,Mom_long_index]
+    Ratio_long<-Ratio_long[order(Ratio_long[,2],decreasing=F),]
     
-    Ratio_sort<-matrix(NA,nrow =length(index_init),ncol = 2)
-    Ratio_sort[,1]<-index_init
-    Ratio_sort[,2]<-Matrix_TRatio[Ratio_index,index_init]
-    Ratio_sort<-Ratio_sort[order(Ratio_sort[,2],decreasing=F),]
-    Sto_long_index<-Ratio_sort[1:floor(len_init/2),1]
-    Sto_short_index<-Ratio_sort[((len_init-(floor(len_init/2)))+1):len_init,1]
+    len_long<-length(Ratio_long[,1])
+    index_long<-Ratio_long[1:floor(len_long/2),1]
     
-    Mom_long<-matrix(NA,nrow =length(Sto_long_index),ncol = 2)
-    Mom_long[,1]<-Sto_long_index
-    Mom_long[,2]<-Mom_Tmp[Sto_long_index,2]
-    Mom_long<-Mom_long[order(Mom_long[,2],decreasing=F),]
-    len_long<-length(Mom_long[,1])
-    index_long<-Mom_long[1:floor(len_long/2),1]
+    Ratio_short<-matrix(NA,nrow =length(Mom_short_index),ncol = 2)
+    Ratio_short[,1]<-Mom_short_index
+    Ratio_short[,2]<-Matrix_TRatio[Ratio_index,Mom_short_index]
+    Ratio_short<-Ratio_short[order(Ratio_short[,2],decreasing=T),]
     
-    Mom_short<-matrix(NA,nrow =length(Sto_short_index),ncol = 2)
-    Mom_short[,1]<-Sto_short_index
-    Mom_short[,2]<-Mom_Tmp[Sto_short_index,2]
-    Mom_short<-Mom_short[order(Mom_short[,2],decreasing=T),]
-    len_short<-length(Mom_short[,1])
-    index_short<-Mom_short[1:floor(len_short/2),1]
+    len_short<-length(Ratio_short[,1])
+    index_short<-Ratio_short[1:floor(len_short/2),1]
+    #==================================================================#
     
     #=================构建组合，KHolding换仓，分层测试=================#
     bench_re_Max_Long <- as.matrix(Matrix_Return[(i+1):(i+KHolding),index_long])
@@ -204,7 +207,7 @@ for(i in seq(KReserve+1,(length(trade_day)-KHolding), KHolding))
     bench_re_Max_Short[which(is.na(bench_re_Max_Short)==1,arr.ind = T)] <- 0
     
     bench_mark_re[(i+1):(i+KHolding)] <- rowSums(bench_re_Max_Long)/ncol(bench_re_Max_Long)-rowSums(bench_re_Max_Short)/ncol(bench_re_Max_Short)
-    
+
   }
 }
 
