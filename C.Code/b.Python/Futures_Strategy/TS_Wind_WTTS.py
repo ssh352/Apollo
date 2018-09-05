@@ -199,13 +199,12 @@ def get_hold_list():
         result_position = w.tquery('Position', 'LoginID=1')
         len_contracts = len(result_position.Data[0])
 
-        print len_contracts
-
-        for contracts in range(len_contracts):
-            if result_position.Data[4][contracts] == 'Buy':
-                dict_hold['BUY'][result_position.Data[0][contracts]] = result_position.Data[6][contracts]
-            elif result_position.Data[4][contracts] == 'Short':
-                dict_hold['SELL'][result_position.Data[0][contracts]] = result_position.Data[6][contracts]
+        if result_position.ErrorCode == 0 and len(result_position.Fields) > 3:
+            for contracts in range(len_contracts):
+                if result_position.Data[4][contracts] == 'Buy':
+                    dict_hold['BUY'][result_position.Data[0][contracts]] = result_position.Data[6][contracts]
+                elif result_position.Data[4][contracts] == 'Short':
+                    dict_hold['SELL'][result_position.Data[0][contracts]] = result_position.Data[6][contracts]
 
     return dict_hold
 
@@ -226,7 +225,7 @@ def exe_close(dict_trade, dict_hold):
                              'OrderType=LMT;LogonID=1')
                 elif key == 'SELL':
                     result_price = w.wsq(contracts, "rt_last")
-                    w.torder(contracts, 'Buy', result_price.Data[0][0], dict_hold[key][contracts],
+                    w.torder(contracts, 'Cover', result_price.Data[0][0], dict_hold[key][contracts],
                              'OrderType=LMT;LogonID=1')
 
                 dict_close[key][contracts] = dict_hold[key][contracts]
@@ -248,10 +247,10 @@ def exe_open(dict_trade, dict_hold):
                              'OrderType=LMT;LogonID=1')
                 elif key == 'SELL':
                     result_price = w.wsq(contracts, "rt_last")
-                    w.torder(contracts, 'Sell', result_price.Data[0][0], dict_trade[key][contracts],
+                    w.torder(contracts, 'Short', result_price.Data[0][0], dict_trade[key][contracts],
                              'OrderType=LMT;LogonID=1')
 
-                dict_open[key][contracts] = dict_hold[key][contracts]
+                dict_open[key][contracts] = dict_trade[key][contracts]
 
 
 # 输出交易品种记录
