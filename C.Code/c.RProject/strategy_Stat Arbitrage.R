@@ -55,11 +55,13 @@ list_contracts<-list(
 
 char_startday<-'2009-01-01'
 char_endday<-'2018-09-10'
+num_commission<-0.0001
 
 # 获取交易日列表
 w_tdays_data<-w.tdays(char_startday,char_endday,"TradingCalendar=SHFE")
 char_calendar<-w_tdays_data[[2]]$DATETIME
 num_calendar<-year(char_calendar)*10000+month(char_calendar)*100+day(char_calendar)
+num_month<-sort(unique(year(char_calendar)*10000+month(char_calendar)*100))
 
 w.start()
 
@@ -151,6 +153,58 @@ get_matrix_return<-function()
   return(matrix_return)
 }
 # matrix_test<-get_matrix_return()
+
+getmaxdown <- function (x) 
+{
+  if (NCOL(x) > 1) 
+    stop("x is not a vector.")
+  if (any(is.na(x))) 
+    stop("NA in x.")
+  cmaxx <- cummax(x) - x
+  mdd <- max(cmaxx)
+  to <- which(mdd == cmaxx)
+  from <- double(NROW(to))
+  for (i in 1:NROW(to)) from[i] <- max(which(cmaxx[1:to[i]] == 0))
+  
+  return(list(maxdrawdown = mdd, from = from, to = to))
+}
+
+# a<-c(50,100,150,50,200,50)
+# getmaxdown(a)
+
+getsharpbyday <- function(x)
+{
+  if (NCOL(x) > 1) 
+    stop("x is not a vector.")
+  if (any(is.na(x))) 
+    stop("NA in x.")
+  erp <- mean(x,trim=0,na.rm=TRUE)
+  erpsd <- sd(x,na.rm=TRUE)
+  
+  sharp <- erp/erpsd*sqrt(252)
+  
+  return(sharp)
+}
+
+# a<-c(50,100,150,50,200,50)
+# getsharpbyday(a)
+
+getsharpbyyear <- function(x)
+{
+  if (NCOL(x) > 1) 
+    stop("x is not a vector.")
+  if (any(is.na(x))) 
+    stop("NA in x.")
+  erp <- mean(x,trim=0,na.rm=TRUE)
+  erpsd <- sd(x,na.rm=TRUE)
+  
+  sharp <- erp/erpsd
+  
+  return(sharp)
+}
+
+# a<-c(50,100,150,50,200,50)
+# getsharpbyyear(a)
   
 #=================================回测模块=================================#
 num_holdcycle<-5
@@ -159,6 +213,8 @@ matrix_indicate<-get_matrix_basis()
 matrix_return<-get_matrix_return()
 
 matrix_quantile<-matrix(NA,nrow=length(num_calendar),ncol=5)
+matrix_variety<-matrix(0,nrow=length(list_contracts),ncol=6)
+matrix_variety[,1]<-1:length(list_contracts)
 
 for(i in seq(2,(length(num_calendar)-num_holdcycle),num_holdcycle))
 {
@@ -199,8 +255,11 @@ for(i in seq(2,(length(num_calendar)-num_holdcycle),num_holdcycle))
     per_index<-matrix_index_sort[((per-1)*floor(len_matrix/5)+1):(per*floor(len_matrix/5)),1]
     
     matrix_cumprod<-apply(matrix_return[i:(i+4),per_index],2,cumprod)
-    matrix_rbind<-rbind(1,matrix_cumprod)
+    matrix_rbind<-rbind(1+num_commission,matrix_cumprod)
     matrix_diff<-diff(matrix_rbind)
+    
+    num_variety<-per_index-1
+    matrix_variety[num_variety,per+1]<-matrix_variety[num_variety,per+1]+matrix_cumprod[5,]-1
     
     matrix_quantile[i:(i+4),per]<-rowSums(matrix_diff)/ncol(matrix_diff)
   }
@@ -208,7 +267,32 @@ for(i in seq(2,(length(num_calendar)-num_holdcycle),num_holdcycle))
 
 #=================================回测结果分析=================================#
 # 按日期/按交易品种
+matrix_quantile_date<-cbind(num_calendar,matrix_quantile)
 
+##==============================按年月统计收益率==============================##
+matrix_stat<-matrix(NA,nrow=length(num_month),ncol=2)
+matrix_stat[,1]<-num_month
+
+for(num_index in seq(1,length(num_month),1))
+{
+  matrix_stat[num_index,2]<-sum(matrix_quantile_date[which(num_month[num_index]<matrix_quantile_date[,1]&matrix_quantile_date[,1]<num_month[num_index+1]),2])
+}
+
+barplot(matrix_stat[,2],names.arg=matrix_stat[,1],xlab="Month",ylab="Revenue",col="blue",main="Chart")
+
+##==============================按月份统计收益率==============================##
+matrix_stat_month<-matrix(NA,nrow=12,ncol=2)
+matrix_stat_month[,1]<-c(1:12)
+
+for(num_month in seq(1,12,1))
+{
+  matrix_stat_month[num_month,2]<-sum(matrix_quantile_date[which(floor(matrix_quantile_date[,1]/100)%%100==num_month),2],na.rm=T)
+}
+
+barplot(matrix_stat_month[,2],names.arg=matrix_stat_month[,1],xlab="Month",ylab="Revenue",col="blue",main="Chart")
+
+##==============================按品种统计收益率==============================##
+barplot(matrix_variety[,2],names.arg=matrix_variety[,1],xlab="Variety",ylab="Revenue",col="blue",main="Chart")
 
 #=================================收益曲线=================================#
 matrix_quantile[which(is.na(matrix_quantile)==1)]<-0
@@ -226,4 +310,6 @@ plot(cumsum(matrix_quantile[1:nrow(matrix_quantile),1]-matrix_quantile[1:nrow(ma
 # lines(cumsum(matrix_quantile[1:nrow(matrix_quantile),4]),type="l",col="green")
 # lines(cumsum(matrix_quantile[1:nrow(matrix_quantile),5]),type="l",col="purple")
 axis(1,at=1:length(num_calendar[1:length(num_calendar)]),labels=num_calendar[1:length(num_calendar)])
+
+
   
