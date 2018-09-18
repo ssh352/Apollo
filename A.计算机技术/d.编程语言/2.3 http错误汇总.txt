@@ -1,3 +1,0 @@
-1 (2)No such file or directory: AH02291: Cannot access directory '/var/log/apache2/' for error log of vhost defined at /opt/cosname/conf/apache2/virtual-hosts.conf:1
-  sudo mkdir /var/log/apache2/ && sudo service apache2 restart
-  http://askubuntu.com/questions/550069/ubuntu-14-04-i-must-create-always-apache2-log-directories-before-start

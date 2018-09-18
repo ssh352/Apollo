@@ -1,0 +1,2 @@
+PostgreSQL数据库    quant@quant33:/opt/postgres/bin$
+PostgreSQL数据库登录    ./psql -U hxquant -h 127.0.0.1 -p 5432 -d hxquant

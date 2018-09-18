@@ -1,0 +1,25 @@
+NumPy
+1.NumPy是Python的科学计算的基本包。(官网：www.numpy.org)
+2.NumPy维度叫做轴，轴的个数叫做秩。NumPy的数组类被称作ndarray。
+3.创建多维数组(实例：http://blog.csdn.net/wizardforcel/article/details/72823633)
+    >>> from numpy import *
+	>>> a = array([[1,2],[3,4]])
+	>>> a[0,0]  # 1
+	>>> a[0,1]  # 2
+	>>> a.shape  # (2,2)
+	
+Pandas
+1.Pandas是基于NumPy的一种数据分析工具。(官网：http://pandas.pydata.org/)
+2.数据结构：Series(一维数组)、Time-Series(时间序列)、DataFrame(二维的表格型数据结构)、Panel(三维的数组，可以理解为DataFrame的容器。)
+3.使用教程(实例：http://blog.csdn.net/qq_16234613/article/details/62046057)
+    >>> import pandas as pd   //数据分析，代码基于numpy
+    >>> import numpy as np    //处理数据，代码基于ndarray
+    >>> import matplotlib.pyplot as plt      //画图
+	>>> s = pd.Series([1,3,5,np.nan,6,8])
+	>>> s = pd.Series(data=[1,2,3,4],index = ['a','b','c','d'])  //传入键和值方式
+	>>> df2 = pd.DataFrame({ 'A' : 1.,
+                     'B' : pd.Timestamp('20130102'),
+                     'C' : pd.Series(1,index=list(range(4)),dtype='float32'),   //生成Series对象,取的是value
+                     'D' : np.array([3] * 4,dtype='int32'),  //生成numpy对象
+                     'E' : pd.Categorical(["test","train","test","train"]),
+                     'F' : 'foo' }) 

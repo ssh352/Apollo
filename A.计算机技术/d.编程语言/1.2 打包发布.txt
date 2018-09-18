@@ -1,5 +1,0 @@
-http://hackerxu.com/2014/10/08/Pypi.html
-pypi发布  http://gohom.win/2015/12/30/build-python-project-ZZ/
-pbr,setup.cfg配置文件  http://www.cnblogs.com/yasmi/p/5183423.html
-entry-points  https://chriswarrick.com/blog/2014/09/15/python-apps-the-right-way-entry_points-and-scripts/
-发布问题汇总  https://segmentfault.com/a/1190000008663126
