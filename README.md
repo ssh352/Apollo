@@ -1,2 +1,2 @@
 # Apollo
-a project for fun.
+a great project for fun.
